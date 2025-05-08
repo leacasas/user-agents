@@ -59,3 +59,19 @@ var mobileWifiUserAgent = UserAgentGenerator.GetRandomUserAgent(mobileWifiFilter
 Console.WriteLine($"\nMobile WiFi User Agent: {mobileWifiUserAgent}");
 
 Console.WriteLine("\n-----------------------------------");
+
+// Demonstrate randomness of generated user agents
+Console.WriteLine("--- Generating Multiple Random User Agents ---");
+var userAgentCount = 25;
+var userAgents = new HashSet<string>();
+for (int i = 0; i < userAgentCount; i++)
+{
+    var userAgent = UserAgentGenerator.GetRandomUserAgent();
+    userAgents.Add(userAgent);
+}
+Console.WriteLine($"Generated {userAgents.Count} unique user agents out of {userAgentCount} attempts.");
+foreach (var userAgent in userAgents)
+{
+    Console.WriteLine(userAgent);
+}
+Console.WriteLine("\n-----------------------------------");

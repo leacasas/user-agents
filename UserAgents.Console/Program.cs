@@ -1,92 +1,61 @@
 ﻿using UserAgents;
+using UserAgents.Models;
 
 Console.WriteLine("--- Getting a Random User Agent ---");
-// If you loaded data from an embedded resource in the default constructor
-var generator = new UserAgentGenerator();
-// If you loaded data from a specific source and passed it to the constructor
-// var myUserAgentData = LoadMyUserAgentData(); // Your data loading logic
-// var generator = new UserAgentGenerator(myUserAgentData);
 
-var randomUserAgent = generator.GetRandomUserAgent();
+var randomUserAgent = UserAgentGenerator.GetRandomUserAgent();
+Console.WriteLine($"Generated User Agent: {randomUserAgent}");
 
-if (randomUserAgent != null)
+// --- Using the Generated User Agent with HttpClient ---
+using var httpClient = new HttpClient();
+// Clear any default User-Agent header if it exists
+httpClient.DefaultRequestHeaders.UserAgent.Clear();
+// Add the generated User-Agent string
+httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(randomUserAgent);
+
+Console.WriteLine("\n--- Making an HTTP Request with the Generated User Agent ---");
+
+try
 {
-    Console.WriteLine($"Generated User Agent: {randomUserAgent.UserAgentString}");
-    Console.WriteLine($"  Browser: {randomUserAgent.Browser?.Name} {randomUserAgent.Browser?.Version}");
-    Console.WriteLine($"  OS: {randomUserAgent.OS?.Name} {randomUserAgent.OS?.Version}");
-    Console.WriteLine($"  Device Type: {randomUserAgent.Device?.Type}");
+    // Use a service like httpbin.org/user-agent to see the sent User-Agent
+    HttpResponseMessage response = await httpClient.GetAsync("https://httpbin.org/user-agent");
+    response.EnsureSuccessStatusCode(); // Throw on error status code
 
-    // --- Using the Generated User Agent with HttpClient ---
-    using var httpClient = new HttpClient();
-    // Clear any default User-Agent header if it exists
-    httpClient.DefaultRequestHeaders.UserAgent.Clear();
-    // Add the generated User-Agent string
-    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(randomUserAgent.UserAgentString);
-
-    Console.WriteLine("\n--- Making an HTTP Request with the Generated User Agent ---");
-
-    try
-    {
-        // Use a service like httpbin.org/user-agent to see the sent User-Agent
-        HttpResponseMessage response = await httpClient.GetAsync("https://httpbin.org/user-agent");
-        response.EnsureSuccessStatusCode(); // Throw on error status code
-
-        string responseBody = await response.Content.ReadAsStringAsync();
-        Console.WriteLine("Response from httpbin.org/user-agent:");
-        Console.WriteLine(responseBody);
-    }
-    catch (HttpRequestException e)
-    {
-        Console.WriteLine($"Request error: {e.Message}");
-    }
+    string responseBody = await response.Content.ReadAsStringAsync();
+    Console.WriteLine("Response from httpbin.org/user-agent:");
+    Console.WriteLine(responseBody);
 }
-else
+catch (HttpRequestException e)
 {
-    Console.WriteLine("Could not generate a user agent (data might be empty).");
+    Console.WriteLine($"Request error: {e.Message}");
 }
 
 Console.WriteLine("\n-----------------------------------");
 
-Console.WriteLine("--- Getting a Filtered User Agent (Mobile Chrome) ---");
+// Demonstrate filtering functionality
+Console.WriteLine("--- Getting Filtered User Agents ---");
 
-var mobileChromeFilter = new UserAgentFilter
-{
-    DeviceType = "mobile",
-    BrowserName = "Chrome"
+// Get an iPhone user agent
+var iphoneFilter = new UserAgentFilter { Platform = "iPhone" };
+var iphoneUserAgent = UserAgentGenerator.GetRandomUserAgent(iphoneFilter);
+Console.WriteLine($"\niPhone User Agent: {iphoneUserAgent}");
+
+// Get a desktop user agent (high resolution screen)
+var desktopFilter = new UserAgentFilter 
+{ 
+    MinScreenWidth = 1920,
+    MinScreenHeight = 1080
 };
+var desktopUserAgent = UserAgentGenerator.GetRandomUserAgent(desktopFilter);
+Console.WriteLine($"\nDesktop User Agent: {desktopUserAgent}");
 
-var mobileChromeUserAgent = generator.GetRandomUserAgent(mobileChromeFilter);
-
-if (mobileChromeUserAgent != null)
-{
-    Console.WriteLine($"Generated Filtered User Agent: {mobileChromeUserAgent.UserAgentString}");
-    Console.WriteLine($"  Browser: {mobileChromeUserAgent.Browser?.Name} {mobileChromeUserAgent.Browser?.Version}");
-    Console.WriteLine($"  OS: {mobileChromeUserAgent.OS?.Name} {mobileChromeUserAgent.OS?.Version}");
-    Console.WriteLine($"  Device Type: {mobileChromeUserAgent.Device?.Type}");
-
-    // --- Using the Filtered User Agent with HttpClient ---
-    using var httpClient = new HttpClient();
-    httpClient.DefaultRequestHeaders.UserAgent.Clear();
-    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(mobileChromeUserAgent.UserAgentString);
-
-    Console.WriteLine("\n--- Making an HTTP Request with the Filtered User Agent ---");
-    try
-    {
-        HttpResponseMessage response = await httpClient.GetAsync("https://httpbin.org/user-agent");
-        response.EnsureSuccessStatusCode();
-
-        string responseBody = await response.Content.ReadAsStringAsync();
-        Console.WriteLine("Response from httpbin.org/user-agent:");
-        Console.WriteLine(responseBody);
-    }
-    catch (HttpRequestException e)
-    {
-        Console.WriteLine($"Request error: {e.Message}");
-    }
-}
-else
-{
-    Console.WriteLine("Could not generate a mobile Chrome user agent (no matching data).");
-}
+// Get a mobile user agent with WiFi connection
+var mobileWifiFilter = new UserAgentFilter 
+{ 
+    MaxScreenWidth = 768,
+    ConnectionType = "wifi"
+};
+var mobileWifiUserAgent = UserAgentGenerator.GetRandomUserAgent(mobileWifiFilter);
+Console.WriteLine($"\nMobile WiFi User Agent: {mobileWifiUserAgent}");
 
 Console.WriteLine("\n-----------------------------------");

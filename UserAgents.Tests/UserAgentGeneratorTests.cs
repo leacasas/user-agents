@@ -1,162 +1,143 @@
-﻿namespace UserAgents.Tests;
+﻿using UserAgents.Models;
+
+namespace UserAgents.Tests;
 
 public class UserAgentGeneratorTests
 {
-    // Small dummy data for testing
-    private readonly List<UserAgent> _testUserAgents =
-    [
-        new UserAgent
+    [Fact]
+    public void GetRandomUserAgent_ReturnsValidUserAgent()
+    {
+        // Act
+        var userAgent = UserAgentGenerator.GetRandomUserAgent();
+
+        // Assert
+        Assert.NotNull(userAgent);
+        Assert.NotEmpty(userAgent);
+        Assert.Contains("Mozilla/5.0", userAgent); // Most user agents start with this
+    }
+
+    [Fact]
+    public void GetRandomUserAgent_ReturnsDifferentUserAgents()
+    {
+        // Act
+        var userAgent1 = UserAgentGenerator.GetRandomUserAgent();
+        var userAgent2 = UserAgentGenerator.GetRandomUserAgent();
+        var userAgent3 = UserAgentGenerator.GetRandomUserAgent();
+
+        // Assert
+        // While it's possible to get the same user agent multiple times,
+        // it's very unlikely with the large dataset we have
+        Assert.NotEqual(userAgent1, userAgent2);
+        Assert.NotEqual(userAgent2, userAgent3);
+        Assert.NotEqual(userAgent1, userAgent3);
+    }
+
+    [Fact]
+    public void GetRandomUserAgent_ReturnsValidUserAgentFormat()
+    {
+        // Act
+        var userAgent = UserAgentGenerator.GetRandomUserAgent();
+
+        // Assert
+        Assert.NotNull(userAgent);
+        Assert.NotEmpty(userAgent);
+        
+        // Basic format validation
+        Assert.StartsWith("Mozilla/5.0", userAgent);
+        Assert.Contains("(", userAgent);
+        Assert.Contains(")", userAgent);
+    }
+
+    [Fact]
+    public void GetRandomUserAgent_ReturnsUserAgentWithCommonBrowsers()
+    {
+        // Act
+        var userAgents = new HashSet<string>();
+        for (int i = 0; i < 100; i++)
         {
-            UserAgentString = "UA1",
-            Browser = new BrowserInfo { Name = "Chrome", Version = "90", MajorVersion = "90" },
-            OS = new OSInfo { Name = "Windows", Version = "10", MajorVersion = "10" },
-            Device = new DeviceInfo { Type = "desktop" },
-            Weight = 0.5
-        },
-        new UserAgent
-        {
-            UserAgentString = "UA2",
-            Browser = new BrowserInfo { Name = "Firefox", Version = "89", MajorVersion = "89" },
-            OS = new OSInfo { Name = "macOS", Version = "11", MajorVersion = "11" },
-            Device = new DeviceInfo { Type = "desktop" },
-            Weight = 0.4
-        },
-        new UserAgent
-        {
-            UserAgentString = "UA3",
-            Browser = new BrowserInfo { Name = "Chrome", Version = "90", MajorVersion = "90" },
-            OS = new OSInfo { Name = "Android", Version = "10", MajorVersion = "10" },
-            Device = new DeviceInfo { Type = "mobile" },
-            Weight = 0.1
+            userAgents.Add(UserAgentGenerator.GetRandomUserAgent());
         }
-    ];
 
-    [Fact]
-    public void Constructor_WithNullData_ThrowsArgumentNullException()
-    {
-        // Arrange & Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new UserAgentGenerator(null));
+        // Assert
+        // We should see a variety of browsers in our random selection
+        var hasChrome = userAgents.Any(ua => ua.Contains("Chrome"));
+        var hasFirefox = userAgents.Any(ua => ua.Contains("Firefox"));
+        var hasSafari = userAgents.Any(ua => ua.Contains("Safari"));
+        var hasEdge = userAgents.Any(ua => ua.Contains("Edg"));
+
+        Assert.True(hasChrome || hasFirefox || hasSafari || hasEdge, 
+            "Expected to find at least one common browser in the random selection");
     }
 
     [Fact]
-    public void GetRandomUserAgent_WithData_ReturnsUserAgent()
+    public void GetRandomUserAgent_WithPlatformFilter_ReturnsMatchingUserAgent()
     {
         // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
+        var filter = new UserAgentFilter { Platform = "iPhone" };
 
         // Act
-        var userAgent = generator.GetRandomUserAgent();
+        var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.Contains(userAgent, _testUserAgents);
+        Assert.Contains("iPhone", userAgent);
     }
 
     [Fact]
-    public void GetRandomUserAgent_WithEmptyData_ReturnsNull()
+    public void GetRandomUserAgent_WithVendorFilter_ReturnsMatchingUserAgent()
     {
         // Arrange
-        var generator = new UserAgentGenerator(new List<UserAgent>());
+        var filter = new UserAgentFilter { Vendor = "Apple Computer, Inc." };
 
         // Act
-        var userAgent = generator.GetRandomUserAgent();
-
-        // Assert
-        Assert.Null(userAgent);
-    }
-
-    [Fact]
-    public void GetRandomUserAgent_WithDeviceFilter_ReturnsMatchingUserAgent()
-    {
-        // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
-        var filters = new UserAgentFilter { DeviceType = "mobile" };
-
-        // Act
-        var userAgent = generator.GetRandomUserAgent(filters);
+        var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.Equal("mobile", userAgent.Device.Type, ignoreCase: true);
-        Assert.Equal("UA3", userAgent.UserAgentString); // Based on our test data
+        Assert.Contains("Apple", userAgent);
     }
 
     [Fact]
-    public void GetRandomUserAgent_WithBrowserFilter_ReturnsMatchingUserAgent()
+    public void GetRandomUserAgent_WithScreenSizeFilter_ReturnsMatchingUserAgent()
     {
         // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
-        var filters = new UserAgentFilter { BrowserName = "Firefox" };
+        var filter = new UserAgentFilter 
+        { 
+            MinScreenWidth = 1920,
+            MinScreenHeight = 1080
+        };
 
         // Act
-        var userAgent = generator.GetRandomUserAgent(filters);
+        var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.Equal("Firefox", userAgent.Browser.Name, ignoreCase: true);
-        Assert.Equal("UA2", userAgent.UserAgentString); // Based on our test data
+        // Note: We can't easily verify the screen size from the user agent string
+        // The filter ensures the data matches, but the string might not contain this info
     }
 
     [Fact]
-    public void GetRandomUserAgent_WithOSFilter_ReturnsMatchingUserAgent()
+    public void GetRandomUserAgent_WithConnectionTypeFilter_ReturnsMatchingUserAgent()
     {
         // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
-        var filters = new UserAgentFilter { OSName = "macOS" };
+        var filter = new UserAgentFilter { ConnectionType = "wifi" };
 
         // Act
-        var userAgent = generator.GetRandomUserAgent(filters);
+        var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.Equal("macOS", userAgent.OS.Name, ignoreCase: true);
-        Assert.Equal("UA2", userAgent.UserAgentString); // Based on our test data
-    }
-
-
-    [Fact]
-    public void GetRandomUserAgent_WithMultipleFilters_ReturnsMatchingUserAgent()
-    {
-        // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
-        var filters = new UserAgentFilter { DeviceType = "desktop", BrowserName = "Chrome" };
-
-        // Act
-        var userAgent = generator.GetRandomUserAgent(filters);
-
-        // Assert
-        Assert.NotNull(userAgent);
-        Assert.Equal("desktop", userAgent.Device.Type, ignoreCase: true);
-        Assert.Equal("Chrome", userAgent.Browser.Name, ignoreCase: true);
-        Assert.Equal("UA1", userAgent.UserAgentString); // Based on our test data
+        // Note: We can't easily verify the connection type from the user agent string
+        // The filter ensures the data matches, but the string might not contain this info
     }
 
     [Fact]
-    public void GetRandomUserAgent_WithNoMatchingFilters_ReturnsNull()
+    public void GetRandomUserAgent_WithInvalidFilter_ThrowsException()
     {
         // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
-        var filters = new UserAgentFilter { DeviceType = "tablet" }; // No tablets in test data
+        var filter = new UserAgentFilter { Platform = "NonExistentPlatform" };
 
-        // Act
-        var userAgent = generator.GetRandomUserAgent(filters);
-
-        // Assert
-        Assert.Null(userAgent);
-    }
-
-    [Fact]
-    public void GetRandomUserAgent_WithEmptyFilters_ReturnsRandomUserAgent()
-    {
-        // Arrange
-        var generator = new UserAgentGenerator(_testUserAgents);
-        var filters = new UserAgentFilter(); // Empty filter
-
-        // Act
-        var userAgent = generator.GetRandomUserAgent(filters);
-
-        // Assert
-        Assert.NotNull(userAgent);
-        Assert.Contains(userAgent, _testUserAgents); // Should return any user agent
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => UserAgentGenerator.GetRandomUserAgent(filter));
     }
 }

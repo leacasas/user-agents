@@ -12,14 +12,11 @@ public class UserAgentGenerator
     private static List<UserAgentData> LoadUserAgents()
     {
         var assembly = typeof(UserAgentGenerator).Assembly;
-        using var stream = assembly.GetManifestResourceStream("UserAgents.Resources.user_agents.json.gz") 
+        using var stream = assembly.GetManifestResourceStream("UserAgents.Resources.user_agents.json.gz")
             ?? throw new InvalidOperationException("Could not find embedded resource: user_agents.json.gz");
-        
+
         using var gzipStream = new GZipStream(stream, CompressionMode.Decompress);
-        using var reader = new StreamReader(gzipStream);
-        var json = reader.ReadToEnd();
-        
-        return JsonSerializer.Deserialize<List<UserAgentData>>(json) 
+        return JsonSerializer.Deserialize<List<UserAgentData>>(gzipStream)
             ?? throw new InvalidOperationException("Failed to deserialize user agents data");
     }
 
@@ -34,7 +31,7 @@ public class UserAgentGenerator
         var userAgents = _userAgents.Value;
         var filteredAgents = ApplyFilters(userAgents, filters);
         
-        if (!filteredAgents.Any())
+        if (filteredAgents.Count == 0)
         {
             throw new InvalidOperationException("No user agents match the specified filters");
         }

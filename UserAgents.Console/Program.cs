@@ -11,7 +11,7 @@ using var httpClient = new HttpClient();
 // Clear any default User-Agent header if it exists
 httpClient.DefaultRequestHeaders.UserAgent.Clear();
 // Add the generated User-Agent string
-httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(randomUserAgent);
+httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(randomUserAgent.UserAgent);
 
 Console.WriteLine("\n--- Making an HTTP Request with the Generated User Agent ---");
 
@@ -67,7 +67,7 @@ var userAgents = new HashSet<string>();
 for (int i = 0; i < userAgentCount; i++)
 {
     var userAgent = UserAgentGenerator.GetRandomUserAgent();
-    userAgents.Add(userAgent);
+    userAgents.Add(userAgent.UserAgent);
 }
 Console.WriteLine($"Generated {userAgents.Count} unique user agents out of {userAgentCount} attempts.");
 foreach (var userAgent in userAgents)

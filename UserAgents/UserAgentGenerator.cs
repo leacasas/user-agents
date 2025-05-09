@@ -8,6 +8,11 @@ public class UserAgentGenerator
 {
     private static readonly Lazy<List<UserAgentData>> _userAgents = new(LoadUserAgents);
     private static readonly Random _random = new();
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        MaxDepth = 128
+    };
 
     private static List<UserAgentData> LoadUserAgents()
     {
@@ -16,46 +21,51 @@ public class UserAgentGenerator
             ?? throw new InvalidOperationException("Could not find embedded resource: user_agents.json.gz");
 
         using var gzipStream = new GZipStream(stream, CompressionMode.Decompress);
-        return JsonSerializer.Deserialize<List<UserAgentData>>(gzipStream)
+        return JsonSerializer.Deserialize<List<UserAgentData>>(gzipStream, _jsonOptions)
             ?? throw new InvalidOperationException("Failed to deserialize user agents data");
     }
 
-    public static string GetRandomUserAgent()
+    public static UserAgentData GetRandomUserAgent(bool ignoreWeights = false)
     {
         var userAgents = _userAgents.Value;
-        return GetRandomUserAgentFromList(userAgents);
+        return GetRandomUserAgentFromList(userAgents, ignoreWeights);
     }
 
-    public static string GetRandomUserAgent(UserAgentFilter filters)
+    public static UserAgentData GetRandomUserAgent(UserAgentFilter filters, bool ignoreWeights = false)
     {
         var userAgents = _userAgents.Value;
         var filteredAgents = ApplyFilters(userAgents, filters);
-        
+
         if (filteredAgents.Count == 0)
         {
             throw new InvalidOperationException("No user agents match the specified filters");
         }
-        
-        return GetRandomUserAgentFromList(filteredAgents);
+
+        return GetRandomUserAgentFromList(filteredAgents, ignoreWeights);
     }
 
-    private static string GetRandomUserAgentFromList(List<UserAgentData> userAgents)
+    private static UserAgentData GetRandomUserAgentFromList(List<UserAgentData> userAgents, bool ignoreWeights)
     {
+        if (ignoreWeights)
+        {
+            return userAgents[_random.Next(userAgents.Count)];
+        }
+
         var totalWeight = userAgents.Sum(ua => ua.Weight);
         var randomValue = _random.NextDouble() * totalWeight;
-        
+
         var currentWeight = 0.0;
         foreach (var userAgent in userAgents)
         {
             currentWeight += userAgent.Weight;
             if (randomValue <= currentWeight)
             {
-                return userAgent.UserAgent;
+                return userAgent;
             }
         }
-        
+
         // Fallback to a random user agent if something goes wrong with the weights
-        return userAgents[_random.Next(userAgents.Count)].UserAgent;
+        return userAgents[_random.Next(userAgents.Count)];
     }
 
     private static List<UserAgentData> ApplyFilters(List<UserAgentData> userAgents, UserAgentFilter filters)

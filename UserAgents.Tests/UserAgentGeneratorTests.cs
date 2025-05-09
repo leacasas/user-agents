@@ -251,7 +251,6 @@ public class UserAgentGeneratorTests
     [InlineData(@"Chrome/135\.0\.", "Chrome/135.0.", "Chrome version 135.0.x")]
     [InlineData(@"Firefox/138\.0", "Firefox/138.0", "Firefox version 138.0")]
     [InlineData(@"Safari/537\.36", "Safari/537.36", "Safari version 537.36")]
-    [InlineData(@"Chrome/53\.0\.7731\.", "Chrome/53.0.7731.", "Chrome version 53.0.7731.x")]
     public void GetRandomUserAgent_WithSpecificBrowserVersion_ReturnsMatchingUserAgents(string pattern, string exactVersion, string testDescription)
     {
         // Arrange

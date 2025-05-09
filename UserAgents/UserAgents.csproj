@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\user_agents.json.gz" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Resources\user_agents.json.gz" />
   </ItemGroup>
 

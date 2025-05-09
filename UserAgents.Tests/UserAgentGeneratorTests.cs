@@ -174,4 +174,104 @@ public class UserAgentGeneratorTests
         Assert.NotNull(userAgent);
         Assert.Contains("iPhone", userAgent.UserAgent);
     }
+
+    [Theory]
+    [InlineData(@"Chrome/\d+", "Chrome/", "Should match any Chrome version")]
+    [InlineData(@"Firefox/\d+\.\d+", "Firefox/", "Should match Firefox with version number")]
+    [InlineData(@"iPhone OS \d+_\d+", "iPhone OS", "Should match iPhone OS versions")]
+    [InlineData(@"Windows NT \d+\.\d+", "Windows NT", "Should match Windows NT versions")]
+    [InlineData(@"Android \d+\.\d+", "Android", "Should match Android versions")]
+    [InlineData(@"Safari/\d+", "Safari/", "Should match Safari versions")]
+    [InlineData(@"Mobile/\w+", "Mobile/", "Should match Mobile identifiers")]
+    [InlineData(@"\(Linux; Android", "(Linux; Android", "Should match Android Linux devices")]
+    [InlineData(@"Mac OS X \d+_\d+", "Mac OS X", "Should match macOS versions")]
+    public void GetRandomUserAgent_WithRegexPattern_ReturnsMatchingUserAgents(string pattern, string expectedSubstring, string testDescription)
+    {
+        // Arrange
+        var filter = new UserAgentFilter { UserAgentPattern = pattern };
+        var matchCount = 0;
+        const int attempts = 10;
+
+        // Act
+        var userAgents = new List<UserAgentData>();
+        for (int i = 0; i < attempts; i++)
+        {
+            var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
+            userAgents.Add(userAgent);
+            if (userAgent.UserAgent.Contains(expectedSubstring)) matchCount++;
+        }
+
+        // Assert
+        Assert.NotEmpty(userAgents);
+        Assert.All(userAgents, ua => Assert.Matches(pattern, ua.UserAgent));
+        Assert.Equal(attempts, matchCount);
+    }
+
+    [Theory]
+    [InlineData(@"Chrome/.*Firefox", "Should not match impossible browser combination")]
+    [InlineData(@"NotARealBrowser/\d+", "Should not match non-existent browser")]
+    [InlineData(@"^Safari$", "Should not match exact Safari string")]
+    public void GetRandomUserAgent_WithImpossibleRegexPattern_ThrowsException(string pattern, string testDescription)
+    {
+        // Arrange
+        var filter = new UserAgentFilter { UserAgentPattern = pattern };
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            UserAgentGenerator.GetRandomUserAgent(filter));
+        Assert.Equal("No user agents match the specified filters", exception.Message);
+    }
+
+    [Theory]
+    [InlineData(@"(Chrome|Firefox)", new[] { "Chrome", "Firefox" })]
+    [InlineData(@"(iPhone|iPad|iPod)", new[] { "iPhone", "iPad", "iPod" })]
+    [InlineData(@"(Windows|Macintosh|Linux)", new[] { "Windows", "Macintosh", "Linux" })]
+    public void GetRandomUserAgent_WithAlternationPattern_ReturnsMatchingUserAgents(string pattern, string[] expectedMatches)
+    {
+        // Arrange
+        var filter = new UserAgentFilter { UserAgentPattern = pattern };
+        var userAgents = new HashSet<string>();
+
+        // Act
+        for (int i = 0; i < 50; i++) // Collect 50 samples to ensure we get variety
+        {
+            var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
+            userAgents.Add(userAgent.UserAgent);
+        }
+
+        // Assert
+        Assert.NotEmpty(userAgents);
+        Assert.All(userAgents, ua => Assert.Matches(pattern, ua));
+        // Verify we got at least one match for any of the expected strings
+        Assert.True(userAgents.Any(ua => expectedMatches.Any(em => ua.Contains(em))),
+            "Should match at least one of the expected alternatives");
+    }
+
+    [Theory]
+    [InlineData(@"Chrome/135\.0\.", "Chrome/135.0.", "Chrome version 135.0.x")]
+    [InlineData(@"Firefox/138\.0", "Firefox/138.0", "Firefox version 138.0")]
+    [InlineData(@"Safari/537\.36", "Safari/537.36", "Safari version 537.36")]
+    [InlineData(@"Chrome/53\.0\.7731\.", "Chrome/53.0.7731.", "Chrome version 53.0.7731.x")]
+    public void GetRandomUserAgent_WithSpecificBrowserVersion_ReturnsMatchingUserAgents(string pattern, string exactVersion, string testDescription)
+    {
+        // Arrange
+        var filter = new UserAgentFilter { UserAgentPattern = pattern };
+        const int attempts = 5;
+        var matchedUserAgents = new List<string>();
+
+        // Act
+        for (int i = 0; i < attempts; i++)
+        {
+            var userAgent = UserAgentGenerator.GetRandomUserAgent(filter);
+            matchedUserAgents.Add(userAgent.UserAgent);
+        }
+
+        // Assert
+        Assert.NotEmpty(matchedUserAgents);
+        Assert.All(matchedUserAgents, ua =>
+        {
+            Assert.Contains(exactVersion, ua);
+            Assert.Matches(pattern, ua);
+        });
+    }
 }

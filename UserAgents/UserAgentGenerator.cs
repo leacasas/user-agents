@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using UserAgents.Models;
 
 namespace UserAgents;
@@ -80,6 +81,14 @@ public class UserAgentGenerator
         if (!string.IsNullOrEmpty(filters.Vendor))
         {
             query = query.Where(ua => ua.Vendor.Equals(filters.Vendor, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrEmpty(filters.UserAgentPattern))
+        {
+            query = query.Where(ua => Regex.IsMatch(
+                ua.UserAgent,
+                filters.UserAgentPattern,
+                RegexOptions.IgnoreCase));
         }
 
         if (filters.MinScreenWidth.HasValue)

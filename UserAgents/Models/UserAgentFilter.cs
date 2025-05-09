@@ -10,4 +10,5 @@ public class UserAgentFilter
     public int? MaxScreenHeight { get; set; }
     public string? ConnectionType { get; set; }
     public string? EffectiveConnectionType { get; set; }
-} 
+    public string? UserAgentPattern { get; set; }
+}

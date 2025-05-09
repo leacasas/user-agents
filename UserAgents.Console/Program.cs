@@ -60,6 +60,21 @@ Console.WriteLine($"\nMobile WiFi User Agent: {mobileWifiUserAgent}");
 
 Console.WriteLine("\n-----------------------------------");
 
+// Demonstrate filtering with a regex pattern
+Console.WriteLine("--- Getting User Agents with Regex Pattern Filter ---");
+var regexFilter = new UserAgentFilter
+{
+    // Example regex pattern to match only Chrome 55 user agents
+    UserAgentPattern = @"(Chrome/55)"
+};
+Console.WriteLine($"\nRegex Filter: {regexFilter.UserAgentPattern}");
+for (int i = 1; i <= 10; i++)
+{
+    var regexUserAgent = UserAgentGenerator.GetRandomUserAgent(regexFilter);
+    Console.WriteLine($"Mached User Agent {i}: {regexUserAgent.UserAgent}");
+}
+Console.WriteLine("\n-----------------------------------");
+
 // Demonstrate randomness of generated user agents
 Console.WriteLine("--- Generating Multiple Random User Agents ---");
 var userAgentCount = 25;

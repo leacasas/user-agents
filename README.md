@@ -9,13 +9,14 @@ This library provides functionality to generate random, realistic user agents fo
 ## Project Structure
 
 - `UserAgents/` - The main library project containing the core functionality
+- `UserAgents.Console/` - Console project to demonstrate library's functionality
 - `UserAgents.Tests/` - xUnit test project for ensuring the library's functionality
 
 ## Development Status
 
 🚧 **Under Development** 🚧
 
-This project is currently in its initial setup phase. The basic project structure has been created, but the core functionality is yet to be implemented.
+This project is currently under development. The most important features have been ported and tested, but others are still pending.
 
 ## Requirements
 

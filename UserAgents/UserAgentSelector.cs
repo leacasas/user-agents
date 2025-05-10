@@ -6,6 +6,10 @@ using UserAgents.Models;
 
 namespace UserAgents;
 
+/// <summary>
+/// Implementation of <see cref="IUserAgentSelector"/> that loads user agent data from an embedded resource
+/// and provides functionality to select random user agents based on various criteria.
+/// </summary>
 public class UserAgentSelector : IUserAgentSelector, IDisposable
 {
     private const string EmbeddedUserAgentsFile = "UserAgents.Resources.user_agents.json.gz";
@@ -13,6 +17,10 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
     private readonly IReadOnlyList<UserAgentData> _allUserAgents;
     private readonly ConcurrentDictionary<string, Regex> _regexCache = new();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserAgentSelector"/> class.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the embedded user agents data file cannot be found or deserialized.</exception>
     public UserAgentSelector()
     {
         _allUserAgents = LoadUserAgents();

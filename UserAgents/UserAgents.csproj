@@ -1,13 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackageId>UserAgents.Net</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>leacasas</Authors>
+    <Description>A .NET port of the intoli/user-agents library.</Description>
+    <RepositoryUrl>https://github.com/leacasas/user-agents</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Resources\user_agents.json.gz" />
+	  <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

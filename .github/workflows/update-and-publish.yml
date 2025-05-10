@@ -1,0 +1,135 @@
+name: Update Data, Build, Test, and Publish
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Allows manual triggering
+
+env:
+  DOTNET_VERSION: '9.0.x' # Or your target .NET version
+  NUGET_FEED_URL: 'https://api.nuget.org/v3/index.json'
+  SOURCE_REPO_OWNER: 'intoli'
+  SOURCE_REPO_NAME: 'user-agents'
+  SOURCE_FILE_PATH: 'src/user-agents.json.gz'
+  EMBEDDED_FILE_PATH: 'UserAgents/Resources/user_agents.json.gz' # <<< Update this to your file's path in your repo
+  LAST_COMMIT_FILE: '.last_source_commit'
+  YOUR_REPO_DEFAULT_NAMESPACE: 'UserAgents' # <<< Update this to your default namespace
+
+jobs:
+  check_for_updates:
+    runs-on: ubuntu-latest
+    outputs:
+      update_needed: ${{ steps.check.outputs.update_needed }}
+      new_commit_hash: ${{ steps.check.outputs.new_commit_hash }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get latest source file commit hash
+        id: get_source_commit
+        run: |
+          COMMIT_INFO=$(curl -s "https://api.github.com/repos/${{ env.SOURCE_REPO_OWNER }}/${{ env.SOURCE_REPO_NAME }}/commits?path=${{ env.SOURCE_FILE_PATH }}&per_page=1")
+          NEW_COMMIT_HASH=$(echo "$COMMIT_INFO" | jq -r '.[0].sha')
+          echo "Latest source commit hash: $NEW_COMMIT_HASH"
+          echo "new_commit_hash=$NEW_COMMIT_HASH" >> "$GITHUB_OUTPUT"
+        env:
+          # Using GITHUB_TOKEN for higher rate limits, although usually not needed for public repos
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read last known commit hash
+        id: get_last_known_commit
+        run: |
+          LAST_KNOWN_COMMIT=""
+          if [ -f ${{ env.LAST_COMMIT_FILE }} ]; then
+            LAST_KNOWN_COMMIT=$(cat ${{ env.LAST_COMMIT_FILE }})
+          fi
+          echo "Last known commit hash: $LAST_KNOWN_COMMIT"
+          echo "last_known_commit=$LAST_KNOWN_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Check if update is needed
+        id: check
+        run: |
+          NEW_COMMIT="${{ steps.get_source_commit.outputs.new_commit_hash }}"
+          LAST_KNOWN_COMMIT="${{ steps.get_last_known_commit.outputs.last_known_commit }}"
+          if [ "$NEW_COMMIT" != "$LAST_KNOWN_COMMIT" ]; then
+            echo "Update needed!"
+            echo "update_needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No update needed."
+            echo "update_needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download and replace data file
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "Downloading latest data file..."
+          curl -L "https://github.com/${{ env.SOURCE_REPO_OWNER }}/${{ env.SOURCE_REPO_NAME }}/raw/main/${{ env.SOURCE_FILE_PATH }}" -o ${{ env.EMBEDDED_FILE_PATH }}
+          echo "Data file updated."
+
+      - name: Update last known commit file
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "${{ steps.check.outputs.new_commit_hash }}" > ${{ env.LAST_COMMIT_FILE }}
+          echo "Last known commit file updated."
+
+      - name: Commit and push changes
+        if: steps.check.outputs.update_needed == 'true'
+        uses: EndBug/add-and-commit@v9 # Use a dedicated action for committing
+        with:
+          author_name: GitHub Actions
+          author_email: actions@github.com
+          message: ' chore(data): Auto-update user-agents data to ${{ steps.check.outputs.new_commit_hash }}'
+          add: |
+            ${{ env.EMBEDDED_FILE_PATH }}
+            ${{ env.LAST_COMMIT_FILE }}
+
+  build_test_publish:
+    needs: check_for_updates
+    # Only run this job if the check_for_updates job completed
+    # and if it committed changes (indicating an update was needed)
+    if: needs.check_for_updates.outputs.update_needed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetch the commit made by the previous job
+          ref: ${{ github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+      - name: Get package version
+        id: get_version
+        run: |
+          # Get the current version from the project file (e.g., <Version>1.0.0</Version>)
+          # Or define a versioning strategy based on the run number or date
+          # For simplicity, let's use the current version + build number
+          PROJECT_FILE=$(find . -name "*.csproj" -print -quit)
+          CURRENT_VERSION=$(grep -m 1 '<Version>' "$PROJECT_FILE" | sed -e 's/.*<Version>//' -e 's/<\/Version>.*//')
+          BUILD_NUMBER=${{ github.run_number }}
+          NEW_PACKAGE_VERSION="$CURRENT_VERSION.$BUILD_NUMBER"
+          echo "Calculated package version: $NEW_PACKAGE_VERSION"
+          echo "package_version=$NEW_PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build --output ./nupkg /p:Version=${{ steps.get_version.outputs.package_version }}
+
+      - name: Push to NuGet
+        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ env.NUGET_FEED_URL }}
+        env:
+          # Ensure the NuGet API key is only used for pushing
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

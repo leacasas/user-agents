@@ -20,7 +20,7 @@ env:
   SOURCE_FILE_PATH: 'src/user-agents.json.gz'
   EMBEDDED_FILE_PATH: 'UserAgents/Resources/user_agents.json.gz'
   LAST_COMMIT_FILE: '.last_source_commit'
-  YOUR_REPO_DEFAULT_NAMESPACE: 'UserAgents' # <<< Update this to your default namespace
+  YOUR_REPO_DEFAULT_NAMESPACE: 'UserAgents'
 
 jobs:
   check_for_updates:
@@ -40,7 +40,6 @@ jobs:
           echo "Latest source commit hash: $NEW_COMMIT_HASH"
           echo "new_commit_hash=$NEW_COMMIT_HASH" >> "$GITHUB_OUTPUT"
         env:
-          # Using GITHUB_TOKEN for higher rate limits
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Read last known commit hash
@@ -99,6 +98,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0 # Fetch all history to be able to tag
           ref: ${{ github.ref }} # Fetch the commit made by the previous job
 
       - name: Setup .NET
@@ -135,3 +135,21 @@ jobs:
         run: dotnet nuget push ./nupkg/UserAgents.Net.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ env.NUGET_FEED_URL }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        if: success()
+        with:
+          tag_name: ${{ steps.get_version.outputs.package_version }} # Use the package version as the Git tag name
+          name: Release v${{ steps.get_version.outputs.package_version }} # Name of the GitHub Release
+          body: | # Release notes content (using Markdown)
+            Automated release of version ${{ steps.get_version.outputs.package_version }}.
+
+            NuGet Package: https://www.nuget.org/packages/${{ env.YOUR_REPO_DEFAULT_NAMESPACE }}/${{ steps.get_version.outputs.package_version }}
+
+            This release includes updated user agent data.
+          draft: false # Set to true to create a draft release
+          prerelease: false # Set to true for prerelease versions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

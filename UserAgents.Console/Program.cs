@@ -73,18 +73,56 @@ for (int i = 1; i <= 10; i++)
 }
 Console.WriteLine("\n-----------------------------------");
 
-// Demonstrate randomness of generated user agents
-Console.WriteLine("--- Generating Multiple Random User Agents ---");
-var userAgentCount = 25;
-var userAgents = new HashSet<string>();
-for (int i = 0; i < userAgentCount; i++)
+// Demonstrate getting multiple random user agents
+Console.WriteLine("--- Getting Multiple Random User Agents ---");
+const int count = 5;
+var randomUserAgents = selector.GetManyRandom(count).ToList();
+Console.WriteLine($"\nGenerated {count} random user agents:");
+foreach (var ua in randomUserAgents)
 {
-    var userAgent = selector.GetRandom();
-    userAgents.Add(userAgent.UserAgent);
+    Console.WriteLine(ua.UserAgent);
 }
-Console.WriteLine($"Generated {userAgents.Count} unique user agents out of {userAgentCount} attempts.");
-foreach (var userAgent in userAgents)
+
+// Demonstrate getting multiple filtered user agents
+Console.WriteLine("\n--- Getting Multiple Filtered User Agents ---");
+var androidFilter = new UserAgentFilter { Platform = "Linux x86_64" };
+var androidUserAgents = selector.GetManyRandom(count, androidFilter).ToList();
+Console.WriteLine($"\nGenerated {count} Android user agents:");
+foreach (var ua in androidUserAgents)
 {
-    Console.WriteLine(userAgent);
+    Console.WriteLine(ua.UserAgent);
 }
+
+// Demonstrate getting all matching user agents
+Console.WriteLine("\n--- Getting All Matching User Agents ---");
+var highResFilter = new UserAgentFilter 
+{ 
+    MinScreenWidth = 3840,  // 4K resolution
+    MinScreenHeight = 2160
+};
+var highResUserAgents = selector.GetAllMatching(highResFilter).ToList();
+Console.WriteLine($"\nFound {highResUserAgents.Count} user agents with 4K resolution:");
+foreach (var ua in highResUserAgents.Take(5))  // Show first 5 to avoid too much output
+{
+    Console.WriteLine($"{ua.UserAgent} ({ua.ScreenWidth}x{ua.ScreenHeight})");
+}
+
+Console.WriteLine("\n-----------------------------------");
+
+// Demonstrate getting multiple user agents with complex filters
+Console.WriteLine("--- Getting Multiple User Agents with Complex Filters ---");
+var complexFilter = new UserAgentFilter 
+{ 
+    Platform = "Win32",
+    EffectiveConnectionType = "4g",
+    MinScreenWidth = 1920,
+    MinScreenHeight = 1080
+};
+var complexUserAgents = selector.GetManyRandom(3, complexFilter).ToList();
+Console.WriteLine("\nGenerated 3 user agents matching complex criteria:");
+foreach (var ua in complexUserAgents)
+{
+    Console.WriteLine($"{ua.UserAgent} ({ua.ScreenWidth}x{ua.ScreenHeight}, {ua.Connection.EffectiveType})");
+}
+
 Console.WriteLine("\n-----------------------------------");

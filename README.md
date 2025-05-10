@@ -81,6 +81,57 @@ var chromeFilter = new UserAgentFilter
 var chromeUserAgent = selector.GetRandom(chromeFilter);
 ```
 
+### Getting Multiple Random User Agents
+
+```csharp
+using UserAgents;
+using UserAgents.Models;
+
+var selector = new UserAgentSelector();
+
+// Get 5 random user agents
+var randomUserAgents = selector.GetManyRandom(5).ToList();
+
+// Get 3 random Android user agents
+var androidFilter = new UserAgentFilter { Platform = "Android" };
+var androidUserAgents = selector.GetManyRandom(3, androidFilter).ToList();
+
+// Get 4 random user agents with complex criteria
+var complexFilter = new UserAgentFilter 
+{ 
+    Platform = "Win32",
+    EffectiveConnectionType = "4g",
+    MinScreenWidth = 1920,
+    MinScreenHeight = 1080
+};
+var complexUserAgents = selector.GetManyRandom(4, complexFilter).ToList();
+```
+
+### Getting All Matching User Agents
+
+```csharp
+using UserAgents;
+using UserAgents.Models;
+
+var selector = new UserAgentSelector();
+
+// Get all user agents with 4K resolution
+var highResFilter = new UserAgentFilter 
+{ 
+    MinScreenWidth = 3840,
+    MinScreenHeight = 2160
+};
+var highResUserAgents = selector.GetAllMatching(highResFilter).ToList();
+
+// Get all mobile user agents with 5G connection
+var mobile5GFilter = new UserAgentFilter 
+{ 
+    MaxScreenWidth = 768,
+    EffectiveConnectionType = "5g"
+};
+var mobile5GUserAgents = selector.GetAllMatching(mobile5GFilter).ToList();
+```
+
 ### Ignoring Weights
 
 By default, user agents are selected based on their weight distribution. To ignore weights and select completely randomly:
@@ -94,6 +145,12 @@ var randomUserAgent = selector.GetRandom(ignoreWeights: true);
 // Get a random iPhone user agent, ignoring weights
 var iphoneFilter = new UserAgentFilter { Platform = "iPhone" };
 var randomIphoneUserAgent = selector.GetRandom(iphoneFilter, ignoreWeights: true);
+
+// Get multiple random user agents, ignoring weights
+var randomUserAgents = selector.GetManyRandom(5, ignoreWeights: true).ToList();
+
+// Get multiple filtered user agents, ignoring weights
+var androidUserAgents = selector.GetManyRandom(3, androidFilter, ignoreWeights: true).ToList();
 ```
 
 ## Project Structure

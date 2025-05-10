@@ -41,13 +41,13 @@ public class UserAgentData
 public class ConnectionData
 {
     [JsonPropertyName("downlink")]
-    public double Downlink { get; set; }
+    public double? Downlink { get; set; }
 
     [JsonPropertyName("effectiveType")]
-    public string EffectiveType { get; set; } = string.Empty;
+    public string? EffectiveType { get; set; }
 
     [JsonPropertyName("rtt")]
-    public double Rtt { get; set; }
+    public double? Rtt { get; set; }
 
     [JsonPropertyName("downlinkMax")]
     public double? DownlinkMax { get; set; }

@@ -188,4 +188,123 @@ public class UserAgentSelectorTests : IDisposable
         Assert.NotNull(userAgent);
         Assert.Contains("iPhone", userAgent.UserAgent);
     }
+
+    [Fact]
+    public void GetManyRandom_ReturnsCorrectNumberOfUserAgents()
+    {
+        // Arrange
+        const int count = 5;
+
+        // Act
+        var userAgents = _selector.GetManyRandom(count).ToList();
+
+        // Assert
+        Assert.Equal(count, userAgents.Count);
+        Assert.All(userAgents, ua => Assert.NotNull(ua));
+        Assert.All(userAgents, ua => Assert.NotEmpty(ua.UserAgent));
+    }
+
+    [Fact]
+    public void GetManyRandom_WithInvalidCount_ThrowsException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => _selector.GetManyRandom(0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => _selector.GetManyRandom(-1));
+    }
+
+    [Fact]
+    public void GetManyRandom_WithFilters_ReturnsMatchingUserAgents()
+    {
+        // Arrange
+        const int count = 5;
+        var filter = new UserAgentFilter { Platform = "iPhone" };
+
+        // Act
+        var userAgents = _selector.GetManyRandom(count, filter).ToList();
+
+        // Assert
+        Assert.Equal(count, userAgents.Count);
+        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgent));
+    }
+
+    [Fact]
+    public void GetManyRandom_WithFiltersAndIgnoreWeights_ReturnsMatchingUserAgents()
+    {
+        // Arrange
+        const int count = 5;
+        var filter = new UserAgentFilter { Platform = "iPhone" };
+
+        // Act
+        var userAgents = _selector.GetManyRandom(count, filter, ignoreWeights: true).ToList();
+
+        // Assert
+        Assert.Equal(count, userAgents.Count);
+        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgent));
+    }
+
+    [Fact]
+    public void GetManyRandom_WithInvalidFilter_ThrowsException()
+    {
+        // Arrange
+        var filter = new UserAgentFilter { Platform = "NonExistentPlatform" };
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => _selector.GetManyRandom(5, filter));
+    }
+
+    [Fact]
+    public void GetAllMatching_ReturnsAllMatchingUserAgents()
+    {
+        // Arrange
+        var filter = new UserAgentFilter { Platform = "iPhone" };
+
+        // Act
+        var userAgents = _selector.GetAllMatching(filter).ToList();
+
+        // Assert
+        Assert.NotEmpty(userAgents);
+        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgent));
+    }
+
+    [Fact]
+    public void GetAllMatching_WithMultipleFilters_ReturnsMatchingUserAgents()
+    {
+        // Arrange
+        var filter = new UserAgentFilter 
+        { 
+            Platform = "Win32",
+            EffectiveConnectionType = "4g"
+        };
+
+        // Act
+        var userAgents = _selector.GetAllMatching(filter).ToList();
+
+        // Assert
+        Assert.NotEmpty(userAgents);
+        Assert.All(userAgents, ua => 
+        {
+            Assert.Equal("Win32", ua.Platform);
+            Assert.Equal("4g", ua.Connection.EffectiveType);
+        });
+    }
+
+    [Fact]
+    public void GetAllMatching_WithNoMatches_ReturnsEmptyEnumerable()
+    {
+        // Arrange
+        var filter = new UserAgentFilter { Platform = "NonExistentPlatform" };
+
+        // Act
+        var userAgents = _selector.GetAllMatching(filter).ToList();
+
+        // Assert
+        Assert.Empty(userAgents);
+    }
+
+    [Fact]
+    public void GetAllMatching_WithNullFilter_ThrowsException()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => _selector.GetAllMatching(null!));
+    }
 }

@@ -35,4 +35,34 @@ public interface IUserAgentSelector
     /// </list>
     /// </remarks>
     UserAgentData GetRandom(UserAgentFilter filters, bool ignoreWeights = false);
+
+    /// <summary>
+    /// Gets multiple random user agents from the embedded dataset.
+    /// </summary>
+    /// <param name="count">The number of random user agents to return.</param>
+    /// <param name="ignoreWeights">When true, ignores the weight distribution of user agents and selects completely randomly.</param>
+    /// <returns>An enumerable of randomly selected user agent data objects.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no user agents are available.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when count is less than or equal to 0.</exception>
+    IEnumerable<UserAgentData> GetManyRandom(int count, bool ignoreWeights = false);
+
+    /// <summary>
+    /// Gets multiple random user agents that match the specified filters.
+    /// </summary>
+    /// <param name="count">The number of random user agents to return.</param>
+    /// <param name="filters">The filters to apply when selecting user agents.</param>
+    /// <param name="ignoreWeights">When true, ignores the weight distribution of user agents and selects completely randomly.</param>
+    /// <returns>An enumerable of randomly selected user agent data objects that match the specified filters.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="filters"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when no user agents match the specified filters.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when count is less than or equal to 0.</exception>
+    IEnumerable<UserAgentData> GetManyRandom(int count, UserAgentFilter filters, bool ignoreWeights = false);
+
+    /// <summary>
+    /// Gets all user agents that match the specified filters.
+    /// </summary>
+    /// <param name="filters">The filters to apply when selecting user agents.</param>
+    /// <returns>An enumerable of all user agent data objects that match the specified filters.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="filters"/> is null.</exception>
+    IEnumerable<UserAgentData> GetAllMatching(UserAgentFilter filters);
 }

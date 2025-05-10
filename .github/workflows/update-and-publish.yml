@@ -76,8 +76,10 @@ jobs:
       - name: Update last known commit file
         if: steps.check.outputs.update_needed == 'true'
         run: |
-          echo "${{ steps.check.outputs.new_commit_hash }}" > ${{ env.LAST_COMMIT_FILE }}
+          echo "Writing new commit hash to ${{ env.LAST_COMMIT_FILE }}..."
+          echo "${{ steps.check.outputs.new_commit_hash }}" | tee ${{ env.LAST_COMMIT_FILE }} > /dev/null # Using tee for potentially more robust writing
           echo "Last known commit file updated."
+        shell: bash
 
       # --- Start Debugging Steps ---
       - name: Debug - Show content of .last_source_commit
@@ -111,6 +113,15 @@ jobs:
         shell: bash
       # --- End Debugging Steps ---
 
+      - name: Stage changes explicitly
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "Staging changes for commit..."
+          git add ${{ env.EMBEDDED_FILE_PATH }}
+          git add ${{ env.LAST_COMMIT_FILE }}
+          echo "Changes staged."
+        shell: bash
+
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
         uses: EndBug/add-and-commit@v9
@@ -118,9 +129,9 @@ jobs:
           author_name: GitHub Actions
           author_email: actions@github.com
           message: ' chore(data): Auto-update user-agents data to ${{ steps.check.outputs.new_commit_hash }}'
-          add: |
-            ${{ env.EMBEDDED_FILE_PATH }}
-            ${{ env.LAST_COMMIT_FILE }}
+          push: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_test_publish:
     needs: check_for_updates

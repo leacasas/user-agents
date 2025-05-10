@@ -79,6 +79,38 @@ jobs:
           echo "${{ steps.check.outputs.new_commit_hash }}" > ${{ env.LAST_COMMIT_FILE }}
           echo "Last known commit file updated."
 
+      # --- Start Debugging Steps ---
+      - name: Debug - Show content of .last_source_commit
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "Content of ${{ env.LAST_COMMIT_FILE }}:"
+          cat ${{ env.LAST_COMMIT_FILE }}
+        shell: bash
+
+      - name: Debug - Show file status of data file
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "File status of ${{ env.EMBEDDED_FILE_PATH }}:"
+          ls -l ${{ env.EMBEDDED_FILE_PATH }}
+          # Optional: Show first few bytes to check content
+          # head -c 20 ${{ env.EMBEDDED_FILE_PATH }} | hexdump -C
+        shell: bash
+
+      - name: Debug - Show Git status
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "Git status:"
+          git status --untracked-files=all
+        shell: bash
+
+      - name: Debug - Show Git diff
+        if: steps.check.outputs.update_needed == 'true'
+        run: |
+          echo "Git diff:"
+          git diff
+        shell: bash
+      # --- End Debugging Steps ---
+
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
         uses: EndBug/add-and-commit@v9
@@ -139,7 +171,7 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
       - name: Push to GitHub Packages
-        run: dotnet nuget push ./nupkg/${{ env.YOUR_REPO_DEFAULT_NAMESPACE }}.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_PACKAGES_FEED_URL }} --skip-duplicate
+        run: dotnet nuget push ./nupkg/UserAgents.Net.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_PACKAGES_FEED_URL }} --skip-duplicate
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -4,21 +4,21 @@ using UserAgents.Models;
 
 namespace UserAgents.Tests;
 
-public class UserAgentGeneratorRegexTests : IDisposable
+public class UserAgentSelectorRegexTests : IDisposable
 {
-    private readonly UserAgentGenerator _generator;
+    private readonly UserAgentSelector _selector;
 
     // setup
-    public UserAgentGeneratorRegexTests()
+    public UserAgentSelectorRegexTests()
     {
-        _generator = new UserAgentGenerator();
+        _selector = new UserAgentSelector();
     }
 
 
     // teardown
     public void Dispose()
     {
-        _generator.Dispose();
+        _selector.Dispose();
     }
 
     [Theory]
@@ -42,7 +42,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
         var userAgents = new List<UserAgentData>();
         for (int i = 0; i < attempts; i++)
         {
-            var userAgent = _generator.GetRandomUserAgent(filter);
+            var userAgent = _selector.GetRandom(filter);
             userAgents.Add(userAgent);
             if (userAgent.UserAgent.Contains(expectedSubstring)) matchCount++;
         }
@@ -64,7 +64,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            _generator.GetRandomUserAgent(filter));
+            _selector.GetRandom(filter));
         Assert.Equal("No user agents match the specified filters", exception.Message);
     }
 
@@ -81,7 +81,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
         // Act
         for (int i = 0; i < 50; i++) // Collect 50 samples to ensure we get variety
         {
-            var userAgent = _generator.GetRandomUserAgent(filter);
+            var userAgent = _selector.GetRandom(filter);
             userAgents.Add(userAgent.UserAgent);
         }
 
@@ -107,7 +107,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
         // Act
         for (int i = 0; i < attempts; i++)
         {
-            var userAgent = _generator.GetRandomUserAgent(filter);
+            var userAgent = _selector.GetRandom(filter);
             matchedUserAgents.Add(userAgent.UserAgent);
         }
 
@@ -138,7 +138,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
         {
             try
             {
-                var userAgent = _generator.GetRandomUserAgent(filter);
+                var userAgent = _selector.GetRandom(filter);
                 foundMatch = userAgent.UserAgent.Contains(expectedContent);
                 if (foundMatch == shouldMatch) break;
             }
@@ -165,7 +165,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            _generator.GetRandomUserAgent(filter));
+            _selector.GetRandom(filter));
         Assert.Equal("No user agents match the specified filters", exception.Message);
     }
 
@@ -181,7 +181,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() =>
-            _generator.GetRandomUserAgent(filter));
+            _selector.GetRandom(filter));
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
 
         // Act - First call (should compile and cache)
         sw.Start();
-        var firstResult = _generator.GetRandomUserAgent(filter);
+        var firstResult = _selector.GetRandom(filter);
         sw.Stop();
         var firstCallTime = sw.ElapsedTicks;
 
@@ -203,7 +203,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
         for (int i = 0; i < 20; i++)
         {
             sw.Restart();
-            _ = _generator.GetRandomUserAgent(filter);
+            _ = _selector.GetRandom(filter);
             sw.Stop();
             timings.Add(sw.ElapsedTicks);
         }
@@ -226,7 +226,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
         };
 
         // Act
-        var userAgent = _generator.GetRandomUserAgent(filter);
+        var userAgent = _selector.GetRandom(filter);
 
         // Assert
         Assert.Matches(filter.UserAgentPattern, userAgent.UserAgent);
@@ -255,7 +255,7 @@ public class UserAgentGeneratorRegexTests : IDisposable
                 try
                 {
                     var filter = new UserAgentFilter { UserAgentPattern = pattern };
-                    _ = _generator.GetRandomUserAgent(filter);
+                    _ = _selector.GetRandom(filter);
                 }
                 catch (Exception ex)
                 {

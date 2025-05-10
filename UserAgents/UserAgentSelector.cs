@@ -5,27 +5,27 @@ using System.Text.RegularExpressions;
 using UserAgents.Models;
 
 namespace UserAgents;
-public interface IUserAgentGenerator
+public interface IUserAgentSelector
 {
-    UserAgentData GetRandomUserAgent(bool ignoreWeights = false);
-    UserAgentData GetRandomUserAgent(UserAgentFilter filters, bool ignoreWeights = false);
+    UserAgentData GetRandom(bool ignoreWeights = false);
+    UserAgentData GetRandom(UserAgentFilter filters, bool ignoreWeights = false);
 }
 
-public class UserAgentGenerator : IUserAgentGenerator, IDisposable
+public class UserAgentSelector : IUserAgentSelector, IDisposable
 {
     private const string EmbeddedUserAgentsFile = "UserAgents.Resources.user_agents.json.gz";
     private const int RegexTimeoutSeconds = 1;
     private readonly IReadOnlyList<UserAgentData> _allUserAgents;
     private readonly ConcurrentDictionary<string, Regex> _regexCache = new();
 
-    public UserAgentGenerator()
+    public UserAgentSelector()
     {
         _allUserAgents = LoadUserAgents();
     }
 
     private static IReadOnlyList<UserAgentData> LoadUserAgents()
     {
-        var assembly = typeof(UserAgentGenerator).Assembly;
+        var assembly = typeof(UserAgentSelector).Assembly;
         using var stream = assembly.GetManifestResourceStream(EmbeddedUserAgentsFile)
              ?? throw new InvalidOperationException("Could not find embedded resource: user_agents.json.gz");
 
@@ -34,12 +34,12 @@ public class UserAgentGenerator : IUserAgentGenerator, IDisposable
              ?? throw new InvalidOperationException("Failed to deserialize user agents data");
     }
 
-    public UserAgentData GetRandomUserAgent(bool ignoreWeights = false)
+    public UserAgentData GetRandom(bool ignoreWeights = false)
     {
         return GetRandomUserAgentFromList(_allUserAgents, ignoreWeights);
     }
 
-    public UserAgentData GetRandomUserAgent(UserAgentFilter filters, bool ignoreWeights = false)
+    public UserAgentData GetRandom(UserAgentFilter filters, bool ignoreWeights = false)
     {
         ArgumentNullException.ThrowIfNull(filters);
 

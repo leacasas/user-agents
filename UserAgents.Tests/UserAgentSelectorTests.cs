@@ -2,27 +2,27 @@
 
 namespace UserAgents.Tests;
 
-public class UserAgentGeneratorTests : IDisposable
+public class UserAgentSelectorTests : IDisposable
 {
-    private readonly UserAgentGenerator _generator;
+    private readonly UserAgentSelector _selector;
 
     // setup
-    public UserAgentGeneratorTests()
+    public UserAgentSelectorTests()
     {
-        _generator = new UserAgentGenerator();
+        _selector = new UserAgentSelector();
     }
 
     // teardown
     public void Dispose()
     {
-        _generator.Dispose();
+        _selector.Dispose();
     }
 
     [Fact]
     public void GetRandomUserAgent_ReturnsValidUserAgent()
     {
         // Act
-        var userAgent = _generator.GetRandomUserAgent();
+        var userAgent = _selector.GetRandom();
 
         // Assert
         Assert.NotNull(userAgent);
@@ -34,9 +34,9 @@ public class UserAgentGeneratorTests : IDisposable
     public void GetRandomUserAgent_ReturnsDifferentUserAgents()
     {
         // Act
-        var userAgent1 = _generator.GetRandomUserAgent();
-        var userAgent2 = _generator.GetRandomUserAgent();
-        var userAgent3 = _generator.GetRandomUserAgent();
+        var userAgent1 = _selector.GetRandom();
+        var userAgent2 = _selector.GetRandom();
+        var userAgent3 = _selector.GetRandom();
 
         // Assert
         Assert.NotNull(userAgent1);
@@ -53,7 +53,7 @@ public class UserAgentGeneratorTests : IDisposable
     public void GetRandomUserAgent_ReturnsValidUserAgentFormat()
     {
         // Act
-        var userAgent = _generator.GetRandomUserAgent();
+        var userAgent = _selector.GetRandom();
 
         // Assert
         Assert.NotNull(userAgent);
@@ -72,7 +72,7 @@ public class UserAgentGeneratorTests : IDisposable
         var userAgents = new HashSet<string>();
         for (int i = 0; i < 100; i++)
         {
-            userAgents.Add(_generator.GetRandomUserAgent().UserAgent);
+            userAgents.Add(_selector.GetRandom().UserAgent);
         }
 
         // Assert
@@ -93,7 +93,7 @@ public class UserAgentGeneratorTests : IDisposable
         var filter = new UserAgentFilter { Platform = "iPhone" };
 
         // Act
-        var userAgent = _generator.GetRandomUserAgent(filter);
+        var userAgent = _selector.GetRandom(filter);
 
         // Assert
         Assert.NotNull(userAgent);
@@ -108,7 +108,7 @@ public class UserAgentGeneratorTests : IDisposable
         var filter = new UserAgentFilter { Vendor = "Apple Computer, Inc." };
 
         // Act
-        var userAgent = _generator.GetRandomUserAgent(filter);
+        var userAgent = _selector.GetRandom(filter);
 
         // Assert
         Assert.NotNull(userAgent);
@@ -129,7 +129,7 @@ public class UserAgentGeneratorTests : IDisposable
         };
 
         // Act
-        var userAgent = _generator.GetRandomUserAgent(filter);
+        var userAgent = _selector.GetRandom(filter);
 
         // Assert
         Assert.NotNull(userAgent);
@@ -145,7 +145,7 @@ public class UserAgentGeneratorTests : IDisposable
         var filter = new UserAgentFilter { ConnectionType = "wifi" };
 
         // Act
-        var userAgent = _generator.GetRandomUserAgent(filter);
+        var userAgent = _selector.GetRandom(filter);
 
         // Assert
         Assert.NotNull(userAgent);
@@ -160,14 +160,14 @@ public class UserAgentGeneratorTests : IDisposable
         var filter = new UserAgentFilter { Platform = "NonExistentPlatform" };
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => _generator.GetRandomUserAgent(filter));
+        Assert.Throws<InvalidOperationException>(() => _selector.GetRandom(filter));
     }
 
     [Fact]
     public void GetRandomUserAgent_WithIgnoreWeights_ReturnsValidUserAgent()
     {
         // Act
-        var userAgent = _generator.GetRandomUserAgent(ignoreWeights: true);
+        var userAgent = _selector.GetRandom(ignoreWeights: true);
 
         // Assert
         Assert.NotNull(userAgent);
@@ -182,7 +182,7 @@ public class UserAgentGeneratorTests : IDisposable
         var filter = new UserAgentFilter { Platform = "iPhone" };
 
         // Act
-        var userAgent = _generator.GetRandomUserAgent(filter, ignoreWeights: true);
+        var userAgent = _selector.GetRandom(filter, ignoreWeights: true);
 
         // Assert
         Assert.NotNull(userAgent);

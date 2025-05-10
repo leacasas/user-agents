@@ -12,12 +12,6 @@ This library provides functionality to generate random, realistic user agents fo
 - `UserAgents.Console/` - Console project to demonstrate library's functionality
 - `UserAgents.Tests/` - xUnit test project for ensuring the library's functionality
 
-## Development Status
-
-🚧 **Under Development** 🚧
-
-This project is currently under development. The most important features have been ported and tested, but others are still pending.
-
 ## Requirements
 
 - .NET 8.0 or later

@@ -116,7 +116,7 @@ jobs:
           # Get the current version from the project file (e.g., <Version>1.0.0</Version>)
           # Or define a versioning strategy based on the run number or date
           # For simplicity, let's use the current version + build number
-          PROJECT_FILE=$(find . -name "*.csproj" -print -quit)
+          PROJECT_FILE=$(find . -name "UserAgents.csproj" -print -quit)
           CURRENT_VERSION=$(grep -m 1 '<Version>' "$PROJECT_FILE" | sed -e 's/.*<Version>//' -e 's/<\/Version>.*//')
           BUILD_NUMBER=${{ github.run_number }}
           NEW_PACKAGE_VERSION="$CURRENT_VERSION.$BUILD_NUMBER"
@@ -124,9 +124,9 @@ jobs:
           echo "package_version=$NEW_PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Pack
-        run: dotnet pack --configuration Release --no-build --output ./nupkg /p:Version=${{ steps.get_version.outputs.package_version }}
+        run: dotnet pack UserAgents/UserAgents.csproj --configuration Release --no-build --output ./nupkg /p:Version=${{ steps.get_version.outputs.package_version }}
 
       - name: Push to NuGet
-        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ env.NUGET_FEED_URL }}
+        run: dotnet nuget push ./nupkg/UserAgents.Net.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ env.NUGET_FEED_URL }}
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

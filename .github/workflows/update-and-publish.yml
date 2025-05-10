@@ -21,6 +21,7 @@ env:
   EMBEDDED_FILE_PATH: 'UserAgents/Resources/user_agents.json.gz'
   LAST_COMMIT_FILE: '.last_source_commit'
   YOUR_REPO_DEFAULT_NAMESPACE: 'UserAgents'
+  GITHUB_PACKAGES_FEED_URL: 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json'
 
 jobs:
   check_for_updates:
@@ -94,12 +95,15 @@ jobs:
     # Only run this job if the check_for_updates job completed and if it committed changes (indicating an update was needed)
     if: needs.check_for_updates.outputs.update_needed == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history to be able to tag
-          ref: ${{ github.ref }} # Fetch the commit made by the previous job
+          fetch-depth: 0
+          ref: ${{ github.ref }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -118,8 +122,6 @@ jobs:
       - name: Get package version
         id: get_version
         run: |
-          # Get the current version from the project file (e.g., <Version>1.0.0</Version>)
-          # Or define a versioning strategy based on the run number or date
           # For simplicity, let's use the current version + build number
           PROJECT_FILE=$(find . -name "UserAgents.csproj" -print -quit)
           CURRENT_VERSION=$(grep -m 1 '<Version>' "$PROJECT_FILE" | sed -e 's/.*<Version>//' -e 's/<\/Version>.*//')
@@ -136,20 +138,23 @@ jobs:
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
+      - name: Push to GitHub Packages
+        run: dotnet nuget push ./nupkg/${{ env.YOUR_REPO_DEFAULT_NAMESPACE }}.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_PACKAGES_FEED_URL }} --skip-duplicate
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
         if: success()
         with:
-          tag_name: ${{ steps.get_version.outputs.package_version }} # Use the package version as the Git tag name
-          name: Release v${{ steps.get_version.outputs.package_version }} # Name of the GitHub Release
-          body: | # Release notes content (using Markdown)
+          tag_name: ${{ steps.get_version.outputs.package_version }}
+          name: Release v${{ steps.get_version.outputs.package_version }}
+          body: |
             Automated release of version ${{ steps.get_version.outputs.package_version }}.
 
             NuGet Package: https://www.nuget.org/packages/${{ env.YOUR_REPO_DEFAULT_NAMESPACE }}/${{ steps.get_version.outputs.package_version }}
-
-            This release includes updated user agent data.
-          draft: false # Set to true to create a draft release
-          prerelease: false # Set to true for prerelease versions
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

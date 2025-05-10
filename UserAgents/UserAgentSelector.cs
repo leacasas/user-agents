@@ -5,11 +5,6 @@ using System.Text.RegularExpressions;
 using UserAgents.Models;
 
 namespace UserAgents;
-public interface IUserAgentSelector
-{
-    UserAgentData GetRandom(bool ignoreWeights = false);
-    UserAgentData GetRandom(UserAgentFilter filters, bool ignoreWeights = false);
-}
 
 public class UserAgentSelector : IUserAgentSelector, IDisposable
 {

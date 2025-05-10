@@ -44,9 +44,9 @@ public class UserAgentSelectorTests : IDisposable
         Assert.NotNull(userAgent3);
         // While it's possible to get the same user agent multiple times,
         // it's very unlikely with the large dataset we have
-        Assert.NotEqual(userAgent1.UserAgent, userAgent2.UserAgent);
-        Assert.NotEqual(userAgent2.UserAgent, userAgent3.UserAgent);
-        Assert.NotEqual(userAgent1.UserAgent, userAgent3.UserAgent);
+        Assert.NotEqual(userAgent1, userAgent2);
+        Assert.NotEqual(userAgent2, userAgent3);
+        Assert.NotEqual(userAgent1, userAgent3);
     }
 
     [Fact]

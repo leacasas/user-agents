@@ -107,8 +107,12 @@ jobs:
     if: needs.check_for_updates.outputs.update_needed == 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
+      releases: write
+      actions: read
+      checks: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

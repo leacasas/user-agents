@@ -3,7 +3,8 @@ using UserAgents.Models;
 
 Console.WriteLine("--- Getting a Random User Agent ---");
 
-var randomUserAgent = UserAgentGenerator.GetRandomUserAgent();
+var generator = new UserAgentGenerator();
+var randomUserAgent = generator.GetRandomUserAgent();
 Console.WriteLine($"Generated User Agent: {randomUserAgent}");
 
 // --- Using the Generated User Agent with HttpClient ---
@@ -37,7 +38,7 @@ Console.WriteLine("--- Getting Filtered User Agents ---");
 
 // Get an iPhone user agent
 var iphoneFilter = new UserAgentFilter { Platform = "iPhone" };
-var iphoneUserAgent = UserAgentGenerator.GetRandomUserAgent(iphoneFilter);
+var iphoneUserAgent = generator.GetRandomUserAgent(iphoneFilter);
 Console.WriteLine($"\niPhone User Agent: {iphoneUserAgent}");
 
 // Get a desktop user agent (high resolution screen)
@@ -46,7 +47,7 @@ var desktopFilter = new UserAgentFilter
     MinScreenWidth = 1920,
     MinScreenHeight = 1080
 };
-var desktopUserAgent = UserAgentGenerator.GetRandomUserAgent(desktopFilter);
+var desktopUserAgent = generator.GetRandomUserAgent(desktopFilter);
 Console.WriteLine($"\nDesktop User Agent: {desktopUserAgent}");
 
 // Get a mobile user agent with WiFi connection
@@ -55,7 +56,7 @@ var mobileWifiFilter = new UserAgentFilter
     MaxScreenWidth = 768,
     ConnectionType = "wifi"
 };
-var mobileWifiUserAgent = UserAgentGenerator.GetRandomUserAgent(mobileWifiFilter);
+var mobileWifiUserAgent = generator.GetRandomUserAgent(mobileWifiFilter);
 Console.WriteLine($"\nMobile WiFi User Agent: {mobileWifiUserAgent}");
 
 Console.WriteLine("\n-----------------------------------");
@@ -70,7 +71,7 @@ var regexFilter = new UserAgentFilter
 Console.WriteLine($"\nRegex Filter: {regexFilter.UserAgentPattern}");
 for (int i = 1; i <= 10; i++)
 {
-    var regexUserAgent = UserAgentGenerator.GetRandomUserAgent(regexFilter);
+    var regexUserAgent = generator.GetRandomUserAgent(regexFilter);
     Console.WriteLine($"Mached User Agent {i}: {regexUserAgent.UserAgent}");
 }
 Console.WriteLine("\n-----------------------------------");
@@ -81,7 +82,7 @@ var userAgentCount = 25;
 var userAgents = new HashSet<string>();
 for (int i = 0; i < userAgentCount; i++)
 {
-    var userAgent = UserAgentGenerator.GetRandomUserAgent();
+    var userAgent = generator.GetRandomUserAgent();
     userAgents.Add(userAgent.UserAgent);
 }
 Console.WriteLine($"Generated {userAgents.Count} unique user agents out of {userAgentCount} attempts.");

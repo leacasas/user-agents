@@ -81,38 +81,6 @@ jobs:
           echo "Last known commit file updated."
         shell: bash
 
-      # --- Start Debugging Steps ---
-      - name: Debug - Show content of .last_source_commit
-        if: steps.check.outputs.update_needed == 'true'
-        run: |
-          echo "Content of ${{ env.LAST_COMMIT_FILE }}:"
-          cat ${{ env.LAST_COMMIT_FILE }}
-        shell: bash
-
-      - name: Debug - Show file status of data file
-        if: steps.check.outputs.update_needed == 'true'
-        run: |
-          echo "File status of ${{ env.EMBEDDED_FILE_PATH }}:"
-          ls -l ${{ env.EMBEDDED_FILE_PATH }}
-          # Optional: Show first few bytes to check content
-          # head -c 20 ${{ env.EMBEDDED_FILE_PATH }} | hexdump -C
-        shell: bash
-
-      - name: Debug - Show Git status
-        if: steps.check.outputs.update_needed == 'true'
-        run: |
-          echo "Git status:"
-          git status --untracked-files=all
-        shell: bash
-
-      - name: Debug - Show Git diff
-        if: steps.check.outputs.update_needed == 'true'
-        run: |
-          echo "Git diff:"
-          git diff
-        shell: bash
-      # --- End Debugging Steps ---
-
       - name: Stage changes explicitly
         if: steps.check.outputs.update_needed == 'true'
         run: |

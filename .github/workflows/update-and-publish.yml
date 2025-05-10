@@ -103,13 +103,12 @@ jobs:
 
   build_test_publish:
     needs: check_for_updates
-    # Only run this job if the check_for_updates job completed and if it committed changes (indicating an update was needed)
     if: needs.check_for_updates.outputs.update_needed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
-      releases: write
+      deployments: write
       actions: read
       checks: write
 

@@ -2,6 +2,8 @@
 
 A .NET port of [intoli/user-agents](https://github.com/intoli/user-agents), a JavaScript library for generating random, realistic user agents.
 
+[![Update Data, Build, Test, and Publish](https://github.com/leacasas/user-agents/actions/workflows/update-and-publish.yml/badge.svg?branch=main)](https://github.com/leacasas/user-agents/actions/workflows/update-and-publish.yml)
+
 ## Overview
 
 This library provides functionality to generate random, realistic user agents for web scraping and testing purposes. It's a direct port of the JavaScript library to .NET, maintaining the same functionality and data sources.

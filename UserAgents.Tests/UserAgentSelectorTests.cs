@@ -1,6 +1,4 @@
-﻿using UserAgents.Models;
-
-namespace UserAgents.Tests;
+﻿namespace UserAgents.Tests;
 
 public class UserAgentSelectorTests : IDisposable
 {
@@ -26,8 +24,8 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
-        Assert.Contains("Mozilla/5.0", userAgent.UserAgent); // Most user agents start with this
+        Assert.NotEmpty(userAgent.UserAgentString);
+        Assert.Contains("Mozilla/5.0", userAgent.UserAgentString); // Most user agents start with this
     }
 
     [Fact]
@@ -57,12 +55,12 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
+        Assert.NotEmpty(userAgent.UserAgentString);
         
         // Very basic format validation
-        Assert.StartsWith("Mozilla/5.0", userAgent.UserAgent);
-        Assert.Contains("(", userAgent.UserAgent);
-        Assert.Contains(")", userAgent.UserAgent);
+        Assert.StartsWith("Mozilla/5.0", userAgent.UserAgentString);
+        Assert.Contains("(", userAgent.UserAgentString);
+        Assert.Contains(")", userAgent.UserAgentString);
     }
 
     [Fact]
@@ -72,7 +70,7 @@ public class UserAgentSelectorTests : IDisposable
         var userAgents = new HashSet<string>();
         for (int i = 0; i < 100; i++)
         {
-            userAgents.Add(_selector.GetRandom().UserAgent);
+            userAgents.Add(_selector.GetRandom().UserAgentString);
         }
 
         // Assert
@@ -97,8 +95,8 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
-        Assert.Contains("iPhone", userAgent.UserAgent);
+        Assert.NotEmpty(userAgent.UserAgentString);
+        Assert.Contains("iPhone", userAgent.UserAgentString);
     }
 
     [Fact]
@@ -112,8 +110,8 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
-        Assert.Contains("Apple", userAgent.UserAgent);
+        Assert.NotEmpty(userAgent.UserAgentString);
+        Assert.Contains("Apple", userAgent.UserAgentString);
     }
 
     [Fact]
@@ -133,7 +131,7 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
+        Assert.NotEmpty(userAgent.UserAgentString);
         Assert.Equal(1920, userAgent.ScreenWidth);
         Assert.Equal(1080, userAgent.ScreenHeight);
     }
@@ -149,7 +147,7 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
+        Assert.NotEmpty(userAgent.UserAgentString);
         Assert.Equal("wifi", userAgent.Connection.Type);
     }
 
@@ -171,8 +169,8 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.NotEmpty(userAgent.UserAgent);
-        Assert.Contains("Mozilla/5.0", userAgent.UserAgent);
+        Assert.NotEmpty(userAgent.UserAgentString);
+        Assert.Contains("Mozilla/5.0", userAgent.UserAgentString);
     }
 
     [Fact]
@@ -186,7 +184,7 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotNull(userAgent);
-        Assert.Contains("iPhone", userAgent.UserAgent);
+        Assert.Contains("iPhone", userAgent.UserAgentString);
     }
 
     [Fact]
@@ -201,7 +199,7 @@ public class UserAgentSelectorTests : IDisposable
         // Assert
         Assert.Equal(count, userAgents.Count);
         Assert.All(userAgents, ua => Assert.NotNull(ua));
-        Assert.All(userAgents, ua => Assert.NotEmpty(ua.UserAgent));
+        Assert.All(userAgents, ua => Assert.NotEmpty(ua.UserAgentString));
     }
 
     [Fact]
@@ -224,7 +222,7 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.Equal(count, userAgents.Count);
-        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgent));
+        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgentString));
     }
 
     [Fact]
@@ -239,7 +237,7 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.Equal(count, userAgents.Count);
-        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgent));
+        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgentString));
     }
 
     [Fact]
@@ -263,7 +261,7 @@ public class UserAgentSelectorTests : IDisposable
 
         // Assert
         Assert.NotEmpty(userAgents);
-        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgent));
+        Assert.All(userAgents, ua => Assert.Contains("iPhone", ua.UserAgentString));
     }
 
     [Fact]

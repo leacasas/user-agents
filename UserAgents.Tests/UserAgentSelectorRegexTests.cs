@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using UserAgents.Models;
 
 namespace UserAgents.Tests;
 
@@ -44,12 +43,12 @@ public class UserAgentSelectorRegexTests : IDisposable
         {
             var userAgent = _selector.GetRandom(filter);
             userAgents.Add(userAgent);
-            if (userAgent.UserAgent.Contains(expectedSubstring)) matchCount++;
+            if (userAgent.UserAgentString.Contains(expectedSubstring)) matchCount++;
         }
 
         // Assert
         Assert.NotEmpty(userAgents);
-        Assert.All(userAgents, ua => Assert.Matches(pattern, ua.UserAgent));
+        Assert.All(userAgents, ua => Assert.Matches(pattern, ua.UserAgentString));
         Assert.Equal(attempts, matchCount);
     }
 
@@ -82,7 +81,7 @@ public class UserAgentSelectorRegexTests : IDisposable
         for (int i = 0; i < 50; i++) // Collect 50 samples to ensure we get variety
         {
             var userAgent = _selector.GetRandom(filter);
-            userAgents.Add(userAgent.UserAgent);
+            userAgents.Add(userAgent.UserAgentString);
         }
 
         // Assert
@@ -108,7 +107,7 @@ public class UserAgentSelectorRegexTests : IDisposable
         for (int i = 0; i < attempts; i++)
         {
             var userAgent = _selector.GetRandom(filter);
-            matchedUserAgents.Add(userAgent.UserAgent);
+            matchedUserAgents.Add(userAgent.UserAgentString);
         }
 
         // Assert
@@ -139,7 +138,7 @@ public class UserAgentSelectorRegexTests : IDisposable
             try
             {
                 var userAgent = _selector.GetRandom(filter);
-                foundMatch = userAgent.UserAgent.Contains(expectedContent);
+                foundMatch = userAgent.UserAgentString.Contains(expectedContent);
                 if (foundMatch == shouldMatch) break;
             }
             catch (InvalidOperationException) when (!shouldMatch)
@@ -209,7 +208,7 @@ public class UserAgentSelectorRegexTests : IDisposable
         }
 
         // Assert
-        Assert.Matches(pattern, firstResult.UserAgent);
+        Assert.Matches(pattern, firstResult.UserAgentString);
 
         // The first call should take longer (compilation)
         Assert.True(firstCallTime > timings.Average(),
@@ -229,7 +228,7 @@ public class UserAgentSelectorRegexTests : IDisposable
         var userAgent = _selector.GetRandom(filter);
 
         // Assert
-        Assert.Matches(filter.UserAgentPattern, userAgent.UserAgent);
+        Assert.Matches(filter.UserAgentPattern, userAgent.UserAgentString);
     }
 
     [Fact]

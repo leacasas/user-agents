@@ -2,7 +2,6 @@
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using UserAgents.Models;
 
 namespace UserAgents;
 
@@ -43,8 +42,8 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
     /// Gets a random user agent from all available user agents.
     /// </summary>
     /// <param name="ignoreWeights">Whether to ignore weights when selecting a random user agent.</param>
-    /// <returns>A randomly selected user agent.</returns>
-    public UserAgentData GetRandom(bool ignoreWeights = false)
+    /// <returns>A randomly selected user agent, or null if no user agents are available.</returns>
+    public UserAgentData? GetRandom(bool ignoreWeights = false)
     {
         return GetRandomUserAgentFromList(_allUserAgents, ignoreWeights);
     }
@@ -54,10 +53,9 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
     /// </summary>
     /// <param name="filters">The filters to apply.</param>
     /// <param name="ignoreWeights">Whether to ignore weights when selecting a random user agent.</param>
-    /// <returns>A randomly selected user agent matching the filters.</returns>
+    /// <returns>A randomly selected user agent matching the filters, or null if no user agents match the filters.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="filters"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when no user agents match the specified filters.</exception>
-    public UserAgentData GetRandom(UserAgentFilter filters, bool ignoreWeights = false)
+    public UserAgentData? GetRandom(UserAgentFilter filters, bool ignoreWeights = false)
     {
         ArgumentNullException.ThrowIfNull(filters);
 
@@ -70,7 +68,7 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
     /// </summary>
     /// <param name="count">The number of user agents to get.</param>
     /// <param name="ignoreWeights">Whether to ignore weights when selecting random user agents.</param>
-    /// <returns>An enumerable of randomly selected user agents.</returns>
+    /// <returns>An enumerable of randomly selected user agents. May contain null values if no user agents are available.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is less than or equal to 0.</exception>
     public IEnumerable<UserAgentData> GetManyRandom(int count, bool ignoreWeights = false)
     {
@@ -84,10 +82,9 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
     /// <param name="count">The number of user agents to get.</param>
     /// <param name="filters">The filters to apply.</param>
     /// <param name="ignoreWeights">Whether to ignore weights when selecting random user agents.</param>
-    /// <returns>An enumerable of randomly selected user agents matching the filters.</returns>
+    /// <returns>An enumerable of randomly selected user agents matching the filters. May contain null values if no user agents match the filters.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="filters"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="count"/> is less than or equal to 0.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when no user agents match the specified filters.</exception>
     public IEnumerable<UserAgentData> GetManyRandom(int count, UserAgentFilter filters, bool ignoreWeights = false)
     {
         ArgumentNullException.ThrowIfNull(filters);
@@ -101,7 +98,7 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
     /// Gets all user agents matching the specified filters.
     /// </summary>
     /// <param name="filters">The filters to apply.</param>
-    /// <returns>An enumerable of all user agents matching the filters.</returns>
+    /// <returns>An enumerable of all user agents matching the filters. Returns an empty enumerable if no user agents match the filters.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="filters"/> is null.</exception>
     public IEnumerable<UserAgentData> GetAllMatching(UserAgentFilter filters)
     {
@@ -148,14 +145,15 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
         bool ignoreWeights)
     {
         return Enumerable.Range(0, count)
-            .Select(_ => GetRandomUserAgentFromList(userAgents, ignoreWeights));
+            .Select(_ => GetRandomUserAgentFromList(userAgents, ignoreWeights))
+            .Where(userAgent => userAgent != null)!;
     }
 
-    private static UserAgentData GetRandomUserAgentFromList(IReadOnlyList<UserAgentData> userAgents, bool ignoreWeights)
+    private static UserAgentData? GetRandomUserAgentFromList(IReadOnlyList<UserAgentData> userAgents, bool ignoreWeights)
     {
         if (userAgents == null || userAgents.Count == 0)
         {
-            throw new InvalidOperationException("No user agents available");
+            return null;
         }
 
         if (ignoreWeights)
@@ -169,7 +167,7 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
         var currentWeight = 0.0;
         foreach (var userAgent in userAgents)
         {
-            currentWeight += userAgent.Weight;
+            currentWeight += userAgent.Weight ?? 0;
             if (randomValue <= currentWeight)
             {
                 return userAgent;
@@ -211,16 +209,14 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
         return query;
     }
 
-    private IEnumerable<UserAgentData> ApplyUserAgentPatternFilter(
-        IEnumerable<UserAgentData> query,
-        string pattern)
+    private IEnumerable<UserAgentData> ApplyUserAgentPatternFilter(IEnumerable<UserAgentData> query, string pattern)
     {
         var regex = GetOrCreateRegex(pattern);
         return query.Where(ua =>
         {
             try
             {
-                return regex.IsMatch(ua.UserAgent);
+                return regex.IsMatch(ua.UserAgentString);
             }
             catch (RegexMatchTimeoutException)
             {
@@ -229,9 +225,7 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
         });
     }
 
-    private static IEnumerable<UserAgentData> ApplyScreenDimensionFilters(
-        IEnumerable<UserAgentData> query,
-        UserAgentFilter filters)
+    private static IEnumerable<UserAgentData> ApplyScreenDimensionFilters(IEnumerable<UserAgentData> query, UserAgentFilter filters)
     {
         if (filters.MinScreenWidth.HasValue)
         {
@@ -256,9 +250,7 @@ public class UserAgentSelector : IUserAgentSelector, IDisposable
         return query;
     }
 
-    private static IEnumerable<UserAgentData> ApplyConnectionFilters(
-        IEnumerable<UserAgentData> query,
-        UserAgentFilter filters)
+    private static IEnumerable<UserAgentData> ApplyConnectionFilters(IEnumerable<UserAgentData> query, UserAgentFilter filters)
     {
         if (!string.IsNullOrEmpty(filters.ConnectionType))
         {

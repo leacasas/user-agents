@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
 
-namespace UserAgents.Models;
+namespace UserAgents;
 
 public class UserAgentData
 {
     [JsonPropertyName("appName")]
-    public string AppName { get; set; } = "Netscape";
+    public string? AppName { get; set; }
 
     [JsonPropertyName("connection")]
     public ConnectionData Connection { get; set; } = new();
@@ -20,22 +20,22 @@ public class UserAgentData
     public string Platform { get; set; } = string.Empty;
 
     [JsonPropertyName("pluginsLength")]
-    public int PluginsLength { get; set; }
+    public int? PluginsLength { get; set; }
 
     [JsonPropertyName("screenHeight")]
-    public int ScreenHeight { get; set; }
+    public int? ScreenHeight { get; set; }
 
     [JsonPropertyName("screenWidth")]
-    public int ScreenWidth { get; set; }
+    public int? ScreenWidth { get; set; }
 
     [JsonPropertyName("userAgent")]
-    public string UserAgent { get; set; } = string.Empty;
+    public string UserAgentString { get; set; } = string.Empty;
 
     [JsonPropertyName("vendor")]
     public string Vendor { get; set; } = string.Empty;
 
     [JsonPropertyName("weight")]
-    public double Weight { get; set; }
+    public double? Weight { get; set; }
 }
 
 public class ConnectionData

@@ -1,5 +1,4 @@
 ﻿using UserAgents;
-using UserAgents.Models;
 
 Console.WriteLine("--- Getting a Random User Agent ---");
 
@@ -11,7 +10,7 @@ Console.WriteLine($"Generated User Agent: {randomUserAgent}");
 using var httpClient = new HttpClient();
 
 httpClient.DefaultRequestHeaders.UserAgent.Clear();
-httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(randomUserAgent.UserAgent);
+httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(randomUserAgent.UserAgentString);
 
 Console.WriteLine("\n--- Making an HTTP Request with the Generated User Agent ---");
 
@@ -69,7 +68,7 @@ Console.WriteLine($"\nRegex Filter: {regexFilter.UserAgentPattern}");
 for (int i = 1; i <= 10; i++)
 {
     var regexUserAgent = selector.GetRandom(regexFilter);
-    Console.WriteLine($"Mached User Agent {i}: {regexUserAgent.UserAgent}");
+    Console.WriteLine($"Mached User Agent {i}: {regexUserAgent.UserAgentString}");
 }
 Console.WriteLine("\n-----------------------------------");
 
@@ -80,7 +79,7 @@ var randomUserAgents = selector.GetManyRandom(count).ToList();
 Console.WriteLine($"\nGenerated {count} random user agents:");
 foreach (var ua in randomUserAgents)
 {
-    Console.WriteLine(ua.UserAgent);
+    Console.WriteLine(ua.UserAgentString);
 }
 
 // Demonstrate getting multiple filtered user agents
@@ -90,7 +89,7 @@ var androidUserAgents = selector.GetManyRandom(count, androidFilter).ToList();
 Console.WriteLine($"\nGenerated {count} Android user agents:");
 foreach (var ua in androidUserAgents)
 {
-    Console.WriteLine(ua.UserAgent);
+    Console.WriteLine(ua.UserAgentString);
 }
 
 // Demonstrate getting all matching user agents
@@ -104,7 +103,7 @@ var highResUserAgents = selector.GetAllMatching(highResFilter).ToList();
 Console.WriteLine($"\nFound {highResUserAgents.Count} user agents with 4K resolution:");
 foreach (var ua in highResUserAgents.Take(5))  // Show first 5 to avoid too much output
 {
-    Console.WriteLine($"{ua.UserAgent} ({ua.ScreenWidth}x{ua.ScreenHeight})");
+    Console.WriteLine($"{ua.UserAgentString} ({ua.ScreenWidth}x{ua.ScreenHeight})");
 }
 
 Console.WriteLine("\n-----------------------------------");
@@ -122,7 +121,7 @@ var complexUserAgents = selector.GetManyRandom(3, complexFilter).ToList();
 Console.WriteLine("\nGenerated 3 user agents matching complex criteria:");
 foreach (var ua in complexUserAgents)
 {
-    Console.WriteLine($"{ua.UserAgent} ({ua.ScreenWidth}x{ua.ScreenHeight}, {ua.Connection.EffectiveType})");
+    Console.WriteLine($"{ua.UserAgentString} ({ua.ScreenWidth}x{ua.ScreenHeight}, {ua.Connection.EffectiveType})");
 }
 
 Console.WriteLine("\n-----------------------------------");

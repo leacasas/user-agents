@@ -29,7 +29,10 @@ var selector = new UserAgentSelector();
 
 // Get a random user agent
 var userAgent = selector.GetRandom();
-Console.WriteLine(userAgent.UserAgent);
+if (userAgent != null)
+{
+    Console.WriteLine(userAgent.UserAgentString);
+}
 ```
 
 ### Using with HttpClient
@@ -40,22 +43,28 @@ using UserAgents;
 var selector = new UserAgentSelector();
 var userAgent = selector.GetRandom();
 
-using var httpClient = new HttpClient();
-httpClient.DefaultRequestHeaders.UserAgent.Clear();
-httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent.UserAgent);
+if (userAgent != null)
+{
+    using var httpClient = new HttpClient();
+    httpClient.DefaultRequestHeaders.UserAgent.Clear();
+    httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent.UserAgentString);
+}
 ```
 
 ### Filtering User Agents
 
 ```csharp
 using UserAgents;
-using UserAgents.Models;
 
 var selector = new UserAgentSelector();
 
 // Get an iPhone user agent
 var iphoneFilter = new UserAgentFilter { Platform = "iPhone" };
 var iphoneUserAgent = selector.GetRandom(iphoneFilter);
+if (iphoneUserAgent != null)
+{
+    Console.WriteLine(iphoneUserAgent.UserAgentString);
+}
 
 // Get a desktop user agent with high resolution screen
 var desktopFilter = new UserAgentFilter 
@@ -64,6 +73,10 @@ var desktopFilter = new UserAgentFilter
     MinScreenHeight = 1080
 };
 var desktopUserAgent = selector.GetRandom(desktopFilter);
+if (desktopUserAgent != null)
+{
+    Console.WriteLine(desktopUserAgent.UserAgentString);
+}
 
 // Get a mobile user agent with WiFi connection
 var mobileWifiFilter = new UserAgentFilter 
@@ -72,6 +85,10 @@ var mobileWifiFilter = new UserAgentFilter
     ConnectionType = "wifi"
 };
 var mobileWifiUserAgent = selector.GetRandom(mobileWifiFilter);
+if (mobileWifiUserAgent != null)
+{
+    Console.WriteLine(mobileWifiUserAgent.UserAgentString);
+}
 
 // Get a user agent matching a specific browser version using regex
 var chromeFilter = new UserAgentFilter
@@ -79,22 +96,33 @@ var chromeFilter = new UserAgentFilter
     UserAgentPattern = @"Chrome/120\.0"
 };
 var chromeUserAgent = selector.GetRandom(chromeFilter);
+if (chromeUserAgent != null)
+{
+    Console.WriteLine(chromeUserAgent.UserAgentString);
+}
 ```
 
 ### Getting Multiple Random User Agents
 
 ```csharp
 using UserAgents;
-using UserAgents.Models;
 
 var selector = new UserAgentSelector();
 
 // Get 5 random user agents
 var randomUserAgents = selector.GetManyRandom(5).ToList();
+foreach (var ua in randomUserAgents.Where(u => u != null))
+{
+    Console.WriteLine(ua.UserAgentString);
+}
 
 // Get 3 random Android user agents
 var androidFilter = new UserAgentFilter { Platform = "Android" };
 var androidUserAgents = selector.GetManyRandom(3, androidFilter).ToList();
+foreach (var ua in androidUserAgents.Where(u => u != null))
+{
+    Console.WriteLine(ua.UserAgentString);
+}
 
 // Get 4 random user agents with complex criteria
 var complexFilter = new UserAgentFilter 
@@ -105,13 +133,16 @@ var complexFilter = new UserAgentFilter
     MinScreenHeight = 1080
 };
 var complexUserAgents = selector.GetManyRandom(4, complexFilter).ToList();
+foreach (var userAgent in complexUserAgents.Where(u => u != null))
+{
+    Console.WriteLine(userAgent.UserAgentString);
+}
 ```
 
 ### Getting All Matching User Agents
 
 ```csharp
 using UserAgents;
-using UserAgents.Models;
 
 var selector = new UserAgentSelector();
 
@@ -122,6 +153,10 @@ var highResFilter = new UserAgentFilter
     MinScreenHeight = 2160
 };
 var highResUserAgents = selector.GetAllMatching(highResFilter).ToList();
+foreach (var ua in highResUserAgents)
+{
+    Console.WriteLine($"{ua.UserAgentString} ({ua.ScreenWidth}x{ua.ScreenHeight})");
+}
 
 // Get all mobile user agents with 5G connection
 var mobile5GFilter = new UserAgentFilter 
@@ -130,6 +165,10 @@ var mobile5GFilter = new UserAgentFilter
     EffectiveConnectionType = "5g"
 };
 var mobile5GUserAgents = selector.GetAllMatching(mobile5GFilter).ToList();
+foreach (var ua in mobile5GUserAgents)
+{
+    Console.WriteLine($"{ua.UserAgentString} ({ua.Connection.EffectiveType})");
+}
 ```
 
 ### Ignoring Weights
@@ -141,16 +180,32 @@ var selector = new UserAgentSelector();
 
 // Get a completely random user agent, ignoring weights
 var randomUserAgent = selector.GetRandom(ignoreWeights: true);
+if (randomUserAgent != null)
+{
+    Console.WriteLine(randomUserAgent.UserAgentString);
+}
 
 // Get a random iPhone user agent, ignoring weights
 var iphoneFilter = new UserAgentFilter { Platform = "iPhone" };
 var randomIphoneUserAgent = selector.GetRandom(iphoneFilter, ignoreWeights: true);
+if (randomIphoneUserAgent != null)
+{
+    Console.WriteLine(randomIphoneUserAgent.UserAgentString);
+}
 
 // Get multiple random user agents, ignoring weights
 var randomUserAgents = selector.GetManyRandom(5, ignoreWeights: true).ToList();
+foreach (var ua in randomUserAgents.Where(u => u != null))
+{
+    Console.WriteLine(ua.UserAgentString);
+}
 
 // Get multiple filtered user agents, ignoring weights
 var androidUserAgents = selector.GetManyRandom(3, androidFilter, ignoreWeights: true).ToList();
+foreach (var ua in androidUserAgents.Where(u => u != null))
+{
+    Console.WriteLine(ua.UserAgentString);
+}
 ```
 
 ## Project Structure

@@ -1,4 +1,4 @@
-namespace UserAgents.Models;
+namespace UserAgents;
 
 /// <summary>
 /// Represents a set of filters that can be applied when selecting user agents.

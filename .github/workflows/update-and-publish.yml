@@ -8,12 +8,12 @@ on:
     # Allows manual triggering
 
 env:
-  DOTNET_VERSION: '9.0.x' # Or your target .NET version
+  DOTNET_VERSION: '9.0.x'
   NUGET_FEED_URL: 'https://api.nuget.org/v3/index.json'
   SOURCE_REPO_OWNER: 'intoli'
   SOURCE_REPO_NAME: 'user-agents'
   SOURCE_FILE_PATH: 'src/user-agents.json.gz'
-  EMBEDDED_FILE_PATH: 'UserAgents/Resources/user_agents.json.gz' # <<< Update this to your file's path in your repo
+  EMBEDDED_FILE_PATH: 'UserAgents/Resources/user_agents.json.gz'
   LAST_COMMIT_FILE: '.last_source_commit'
   YOUR_REPO_DEFAULT_NAMESPACE: 'UserAgents' # <<< Update this to your default namespace
 
@@ -35,7 +35,7 @@ jobs:
           echo "Latest source commit hash: $NEW_COMMIT_HASH"
           echo "new_commit_hash=$NEW_COMMIT_HASH" >> "$GITHUB_OUTPUT"
         env:
-          # Using GITHUB_TOKEN for higher rate limits, although usually not needed for public repos
+          # Using GITHUB_TOKEN for higher rate limits
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Read last known commit hash
@@ -76,7 +76,7 @@ jobs:
 
       - name: Commit and push changes
         if: steps.check.outputs.update_needed == 'true'
-        uses: EndBug/add-and-commit@v9 # Use a dedicated action for committing
+        uses: EndBug/add-and-commit@v9
         with:
           author_name: GitHub Actions
           author_email: actions@github.com
@@ -87,16 +87,14 @@ jobs:
 
   build_test_publish:
     needs: check_for_updates
-    # Only run this job if the check_for_updates job completed
-    # and if it committed changes (indicating an update was needed)
+    # Only run this job if the check_for_updates job completed and if it committed changes (indicating an update was needed)
     if: needs.check_for_updates.outputs.update_needed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Fetch the commit made by the previous job
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref }} # Fetch the commit made by the previous job
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -110,7 +108,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test UserAgents.Tests/UserAgents.Tests.csproj --configuration Release --no-build --verbosity normal
 
       - name: Get package version
         id: get_version
@@ -131,5 +129,4 @@ jobs:
       - name: Push to NuGet
         run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ env.NUGET_FEED_URL }}
         env:
-          # Ensure the NuGet API key is only used for pushing
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

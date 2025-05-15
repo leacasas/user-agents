@@ -2,7 +2,7 @@ name: Update Data, Build, Test, and Publish
 
 on:
   schedule:
-    - cron: '0 7 * * *' # Run daily at 07:00 UTC
+    - cron: '0 7 */2 * *' # Run every 2 days at 07:00 UTC
   workflow_dispatch:
     # Allows manual triggering
   push:

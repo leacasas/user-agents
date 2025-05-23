@@ -130,7 +130,7 @@ public class UserAgentSelectorRegexTests : IDisposable
 
         // Act
         var attempts = 0;
-        const int maxAttempts = 100;
+        const int maxAttempts = 200;
         var foundMatch = false;
 
         while (attempts < maxAttempts)

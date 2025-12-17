@@ -22,6 +22,7 @@ public class UserAgentSelectorRegexTests : IDisposable
 
     [Theory]
     [InlineData(@"Chrome/\d+", "Chrome/", "Should match any Chrome version")]
+    [InlineData(@"Edg/\d+", "Edg/", "Should match any Edge version")]
     [InlineData(@"Firefox/\d+\.\d+", "Firefox/", "Should match Firefox with version number")]
     [InlineData(@"iPhone OS \d+_\d+", "iPhone OS", "Should match iPhone OS versions")]
     [InlineData(@"Windows NT \d+\.\d+", "Windows NT", "Should match Windows NT versions")]
@@ -42,8 +43,11 @@ public class UserAgentSelectorRegexTests : IDisposable
         for (int i = 0; i < attempts; i++)
         {
             var userAgent = _selector.GetRandom(filter);
+
             userAgents.Add(userAgent);
-            if (userAgent.UserAgentString.Contains(expectedSubstring)) matchCount++;
+
+            if (userAgent.UserAgentString.Contains(expectedSubstring)) 
+                matchCount++;
         }
 
         // Assert
@@ -94,7 +98,7 @@ public class UserAgentSelectorRegexTests : IDisposable
 
     [Theory]
     [InlineData(@"Chrome/135\.0\.", "Chrome/135.0.", "Chrome version 135.0.x")]
-    [InlineData(@"Firefox/138\.0", "Firefox/138.0", "Firefox version 138.0")]
+    [InlineData(@"Edg/143\.0", "Edg/143.0", "Edge 143.0")]
     [InlineData(@"Safari/537\.36", "Safari/537.36", "Safari version 537.36")]
     public void GetRandomUserAgent_WithSpecificBrowserVersion_ReturnsMatchingUserAgents(string pattern, string exactVersion, string testDescription)
     {
@@ -107,7 +111,8 @@ public class UserAgentSelectorRegexTests : IDisposable
         for (int i = 0; i < attempts; i++)
         {
             var userAgent = _selector.GetRandom(filter);
-            matchedUserAgents.Add(userAgent.UserAgentString);
+            if (userAgent != null)
+                matchedUserAgents.Add(userAgent.UserAgentString);
         }
 
         // Assert

@@ -44,10 +44,13 @@ public class UserAgentSelectorRegexTests : IDisposable
         {
             var userAgent = _selector.GetRandom(filter);
 
-            userAgents.Add(userAgent);
+            if (userAgent != null)
+            {
+                userAgents.Add(userAgent);
 
-            if (userAgent.UserAgentString.Contains(expectedSubstring)) 
-                matchCount++;
+                if (userAgent.UserAgentString.Contains(expectedSubstring))
+                    matchCount++;
+            }                
         }
 
         // Assert
@@ -85,7 +88,8 @@ public class UserAgentSelectorRegexTests : IDisposable
         for (int i = 0; i < 50; i++) // Collect 50 samples to ensure we get variety
         {
             var userAgent = _selector.GetRandom(filter);
-            userAgents.Add(userAgent.UserAgentString);
+            if (userAgent != null)
+                userAgents.Add(userAgent.UserAgentString);
         }
 
         // Assert
@@ -98,7 +102,7 @@ public class UserAgentSelectorRegexTests : IDisposable
 
     [Theory]
     [InlineData(@"Chrome/135\.0\.", "Chrome/135.0.", "Chrome version 135.0.x")]
-    [InlineData(@"Edg/143\.0", "Edg/143.0", "Edge 143.0")]
+    [InlineData(@"Edg/150\.0", "Edg/150.0", "Edge 150.0")]
     [InlineData(@"Safari/537\.36", "Safari/537.36", "Safari version 537.36")]
     public void GetRandomUserAgent_WithSpecificBrowserVersion_ReturnsMatchingUserAgents(string pattern, string exactVersion, string testDescription)
     {
@@ -143,7 +147,8 @@ public class UserAgentSelectorRegexTests : IDisposable
             try
             {
                 var userAgent = _selector.GetRandom(filter);
-                foundMatch = userAgent.UserAgentString.Contains(expectedContent);
+                if (userAgent != null)
+                    foundMatch = userAgent.UserAgentString.Contains(expectedContent);
                 if (foundMatch == shouldMatch) break;
             }
             catch (InvalidOperationException) when (!shouldMatch)
@@ -199,7 +204,7 @@ public class UserAgentSelectorRegexTests : IDisposable
 
         // Act - First call (should compile and cache)
         sw.Start();
-        var firstResult = _selector.GetRandom(filter);
+        var firstResult = _selector.GetRandom(filter)!;//Unlikely to lack a chrome user agent
         sw.Stop();
         var firstCallTime = sw.ElapsedTicks;
 
@@ -233,6 +238,7 @@ public class UserAgentSelectorRegexTests : IDisposable
         var userAgent = _selector.GetRandom(filter);
 
         // Assert
+        Assert.NotNull(userAgent);
         Assert.Matches(filter.UserAgentPattern, userAgent.UserAgentString);
     }
 

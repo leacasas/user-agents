@@ -70,7 +70,7 @@ public class UserAgentSelectorTests : IDisposable
         var userAgents = new HashSet<string>();
         for (int i = 0; i < 100; i++)
         {
-            userAgents.Add(_selector.GetRandom().UserAgentString);
+            userAgents.Add(_selector.GetRandom()!.UserAgentString);
         }
 
         // Assert

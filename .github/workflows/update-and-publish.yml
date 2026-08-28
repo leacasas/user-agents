@@ -111,6 +111,7 @@ jobs:
       deployments: write
       actions: read
       checks: write
+      id-token: write
 
     steps:
       - name: Checkout code
@@ -147,10 +148,20 @@ jobs:
       - name: Pack
         run: dotnet pack UserAgents/UserAgents.csproj --configuration Release --no-build --output ./nupkg /p:Version=${{ steps.get_version.outputs.package_version }}
 
+      - name: NuGet Login
+      # You may pin to the exact commit or the version.
+      # uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841
+        uses: NuGet/login@v1.2.0
+        with:
+          # NuGet username
+          user: leacasas
+          # Token exchange endpoint URL
+          # token-service-url: # optional, default is https://www.nuget.org/api/v2/token
+          # OIDC audience to request
+          # audience: # optional, default is https://www.nuget.org
+
       - name: Push to NuGet
         run: dotnet nuget push ./nupkg/UserAgents.Net.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ env.NUGET_FEED_URL }}
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
       - name: Push to GitHub Packages
         run: dotnet nuget push ./nupkg/UserAgents.Net.${{ steps.get_version.outputs.package_version }}.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source ${{ env.GITHUB_PACKAGES_FEED_URL }} --skip-duplicate

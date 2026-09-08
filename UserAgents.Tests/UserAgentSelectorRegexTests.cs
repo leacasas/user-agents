@@ -101,7 +101,7 @@ public class UserAgentSelectorRegexTests : IDisposable
     }
 
     [Theory]
-    [InlineData(@"Chrome/135\.0\.", "Chrome/135.0.", "Chrome version 135.0.x")]
+    [InlineData(@"Chrome/139\.0\.", "Chrome/139.0.", "Chrome version 139.0.x")]
     [InlineData(@"Edg/150\.0", "Edg/150.0", "Edge 150.0")]
     [InlineData(@"Safari/537\.36", "Safari/537.36", "Safari version 537.36")]
     public void GetRandomUserAgent_WithSpecificBrowserVersion_ReturnsMatchingUserAgents(string pattern, string exactVersion, string testDescription)
